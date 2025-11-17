@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finity - Expense Tracker</title>
+    <title>Finity - AI-Powered Finance Manager for Students</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ... (CSS remains the same as the original code) ... */
-        /* Copied from original for completeness */
+        /* CSS remains largely the same as the original localStorage version, adapted for Flask */
         * {
             margin: 0;
             padding: 0;
@@ -947,14 +946,100 @@
                 margin-right: 10px;
             }
         }
+        /* Chatbot Styles */
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1001;
+        }
+        .chatbot-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .chatbot-window {
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            width: 350px;
+            height: 400px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chatbot-header {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .chatbot-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 5px;
+        }
+        .user-message {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+        }
+        .bot-message {
+            align-self: flex-start;
+            background: #e9ecef;
+            color: var(--text-color);
+        }
+        .chatbot-input {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid var(--border-color);
+        }
+        .chatbot-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .chatbot-input button {
+            padding: 10px 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .chatbot-window.hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <!-- Homepage -->
     <div class="homepage" id="homepage">
         <div class="hero">
             <div class="logo-container">
-                <!-- Logo SVG -->
                 <div class="logo-image">
                     <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <polygon points="50,10 70,30 50,50 30,30" />
@@ -988,12 +1073,10 @@
                 </div>
             </div>
         </div>
-        <!-- About Section (Empty for user to fill in later) -->
         <div class="about-section">
             <h2>About Finity</h2>
             <div class="about-content">
-                <!-- This section is intentionally left empty for you to add content later -->
-            </div>
+                </div>
         </div>
         <div class="contact-section">
             <h2>Contact Us</h2>
@@ -1001,7 +1084,7 @@
                 <div class="contact-item">
                     <i class="fas fa-phone"></i>
                     <h3>Phone</h3>
-                    <p>+91 73072 70732</p>
+                    <p>5555555555</p>
                 </div>
                 <div class="contact-item">
                     <i class="fas fa-envelope"></i>
@@ -1019,7 +1102,6 @@
             <p>&copy; 2025 Finity. All rights reserved.</p>
         </div>
     </div>
-    <!-- Registration Modal -->
     <div class="modal" id="registerModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1044,1072 +1126,561 @@
                     <input type="tel" id="registerPhone" placeholder="Enter your phone number" required>
                 </div>
                 <div class="form-group-modal">
-                    <label for="otp">OTP</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="otp" placeholder="Enter OTP" required>
-                        <button type="button" class="btn btn-secondary" id="sendOtpBtn">Send OTP</button>
-                    </div>
+                    <label for="initialBalance">Initial Balance</label>
+                    <input type="number" id="initialBalance" placeholder="Enter your initial balance" value="50000" min="0" required>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-insight" id="switchToLogin">Login</button>
-                    <button type="submit" class="btn btn-pay">Register</button>
+                    <button type="submit" class="btn btn-primary" id="registerBtn">
+                        <span id="registerBtnText">Sign Up</span>
+                        <div id="registerSpinner" class="loading" style="display: none;"></div>
+                    </button>
                 </div>
             </form>
         </div>
     </div>
-    <!-- Dashboard -->
-    <div class="dashboard" id="dashboard">
-        <!-- Menu Bar -->
+    <div class="dashboard container" id="dashboard">
+        <header>
+            <div class="logo">
+                <i class="fas fa-wallet"></i>
+                <h1>FINITY</h1>
+            </div>
+            <div class="money-display" id="currentBalanceDisplay">
+                <i class="fas fa-rupee-sign"></i> 50000.00
+            </div>
+        </header>
         <div class="menu-bar">
             <div class="menu-items">
-                <button class="menu-item" id="dashboardBtn">
-                    <i class="fas fa-home"></i> Dashboard
-                </button>
-                <button class="menu-item" id="insightsBtn">
-                    <i class="fas fa-chart-pie"></i> Insights
-                </button>
-                <button class="menu-item" id="profileBtn">
-                    <i class="fas fa-user"></i> Profile
-                </button>
-                <button class="menu-item" id="friendsBtn">
-                    <i class="fas fa-user-friends"></i> Friends
-                </button>
-                <button class="menu-item" id="darkModeToggle">
-                    <i class="fas fa-moon"></i> Dark Mode
-                </button>
-                <button class="menu-item" id="logoutBtn">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
+                <button class="menu-item" id="navDashboard"><i class="fas fa-chart-line"></i> Dashboard</button>
+                <button class="menu-item" id="navInsights"><i class="fas fa-chart-pie"></i> Insights</button>
+                <button class="menu-item" id="navProfile"><i class="fas fa-user"></i> Profile</button>
+                <button class="menu-item" id="navFriends"><i class="fas fa-users"></i> Friends</button>
+                <button class="menu-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                <button class="menu-item" id="toggleDarkMode"><i class="fas fa-moon"></i> Dark Mode</button>
             </div>
             <button class="menu-btn" id="menuBtn">
                 <i class="fas fa-bars"></i>
             </button>
-            <div class="menu-dropdown" id="menuDropdown">
-                <div class="menu-item-dropdown" id="dashboardBtnMobile">
-                    <i class="fas fa-home"></i> Dashboard
-                </div>
-                <div class="menu-item-dropdown" id="insightsBtnMobile">
-                    <i class="fas fa-chart-pie"></i> Insights
-                </div>
-                <div class="menu-item-dropdown" id="profileBtnMobile">
-                    <i class="fas fa-user"></i> Profile
-                </div>
-                <div class="menu-item-dropdown" id="friendsBtnMobile">
-                    <i class="fas fa-user-friends"></i> Friends
-                </div>
-                <div class="menu-item-dropdown" id="darkModeToggleMobile">
-                    <i class="fas fa-moon"></i> Dark Mode
-                </div>
-                <div class="menu-item-dropdown" id="logoutBtnMobile">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </div>
-            </div>
         </div>
-        <header>
-            <div class="logo">
-                <i class="fas fa-indian-rupee-sign"></i>
-                <h1>Finity</h1>
-            </div>
-            <div class="money-display">
-                <i class="fas fa-wallet"></i>
-                <span id="balanceDisplay">₹0.00</span>
-            </div>
-        </header>
-        <div class="stats-section">
-            <div class="stat-card">
-                <div class="stat-value" id="totalBalance">₹0.00</div>
-                <div class="stat-label">Total Balance</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="monthlyExpenses">₹0.00</div>
-                <div class="stat-label">Monthly Expenses</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="dailyAverage">₹0.00</div>
-                <div class="stat-label">Daily Average</div>
-            </div>
-        </div>
-        <div class="main-content">
-            <div class="card pay-section">
-                <h2><i class="fas fa-credit-card"></i> Send Money</h2>
-                <form class="payment-form" id="paymentForm">
-                    <div class="form-group">
-                        <label for="amount">Amount (₹)</label>
-                        <input type="number" id="amount" placeholder="Enter amount" min="0.01" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="description">Description (Optional)</label>
-                        <input type="text" id="description" placeholder="What was this for?">
-                    </div>
-                    <div class="form-group">
-                        <label for="recipientId">Pay to User ID</label>
-                        <input type="text" id="recipientId" placeholder="Enter recipient's User ID" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="category">Category</label>
-                        <select id="category" required>
-                            <option value="">Select category</option>
-                            <option value="shopping">Online Shopping</option>
-                            <option value="merchant">Merchant Payment</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-pay">
-                        <i class="fas fa-money-bill-wave"></i> Send Money
-                    </button>
-                </form>
-            </div>
-            <div class="card">
-                <h2><i class="fas fa-chart-line"></i> Track Expenses</h2>
-                <div class="insights">
-                    <div class="insight-card">
-                        <h3>Daily Expenditure</h3>
-                        <div class="insight-value" id="dailyExpenditure">₹0.00</div>
-                    </div>
-                    <div class="insight-card">
-                        <h3>Monthly Expenditure</h3>
-                        <div class="insight-value" id="monthlyExpenditure">₹0.00</div>
-                    </div>
-                </div>
-                <div class="expense-segregation">
-                    <h3 style="margin: 20px 0 15px; color: var(--dark);">Expense Segregation</h3>
-                    <div class="segregation-item">
-                        <span>Online Shopping</span>
-                        <span id="shoppingAmount">₹0.00</span>
-                    </div>
-                    <div class="segregation-bar" style="width: 70%; background: #f8961e;"></div>
-                    <div class="segregation-item">
-                        <span>Merchant Payments</span>
-                        <span id="merchantAmount">₹0.00</span>
-                    </div>
-                    <div class="segregation-bar" style="width: 45%; background: #4cc9f0;"></div>
-                    <div class="segregation-item">
-                        <span>Other Expenses</span>
-                        <span id="otherAmount">₹0.00</span>
-                    </div>
-                    <div class="segregation-bar" style="width: 15%; background: var(--gray);"></div>
-                </div>
-                <button class="btn btn-insight" id="viewInsightsBtn" style="margin-top: 25px; width: 100%;">
-                    <i class="fas fa-chart-pie"></i> View Detailed Insights
-                </button>
-                <button class="btn btn-balance" id="checkBalanceBtn" style="margin-top: 15px; width: 100%;">
-                    <i class="fas fa-coins"></i> Check Balance
-                </button>
-            </div>
-        </div>
-        <div class="card">
-            <h2><i class="fas fa-receipt"></i> Recent Transactions</h2>
-            <div class="expense-list" id="expenseList">
-                <!-- Transactions will be added here dynamically -->
-            </div>
-        </div>
-    </div>
-    <!-- Detailed Insights Page -->
-    <div class="container insights-page" id="insightsPage">
-        <div class="insights-header">
-            <h1><i class="fas fa-chart-pie"></i> Detailed Insights</h1>
-            <button class="back-btn" id="backToDashboard">
-                <i class="fas fa-arrow-left"></i> Back to Dashboard
-            </button>
-        </div>
-        <div class="chart-container">
-            <h2 class="chart-title">Monthly Expense Distribution</h2>
-            <div class="chart">
-                <div class="bar shopping" style="height: 220px;">
-                    <div class="bar-value" id="shoppingValue">₹0.00</div>
-                    <div class="bar-label">Shopping</div>
-                </div>
-                <div class="bar merchant" style="height: 150px;">
-                    <div class="bar-value" id="merchantValue">₹0.00</div>
-                    <div class="bar-label">Merchant</div>
-                </div>
-                <div class="bar other" style="height: 50px;">
-                    <div class="bar-value" id="otherValue">₹0.00</div>
-                    <div class="bar-label">Other</div>
-                </div>
-            </div>
-        </div>
-        <div class="monthly-breakdown">
-            <div class="breakdown-card">
-                <h3><i class="fas fa-shopping-cart"></i> Online Shopping</h3>
-                <div class="breakdown-item">
-                    <span>Amazon</span>
-                    <div class="breakdown-amount" id="amazonAmount">₹0.00</div>
-                </div>
-                <div class="breakdown-item">
-                    <span>Flipkart</span>
-                    <div class="breakdown-amount" id="flipkartAmount">₹0.00</div>
-                </div>
-                <div class="breakdown-item">
-                    <span>Etsy</span>
-                    <div class="breakdown-amount" id="etsyAmount">₹0.00</div>
-                </div>
-                <div class="breakdown-item">
-                    <span>Other</span>
-                    <div class="breakdown-amount" id="otherShoppingAmount">₹0.00</div>
-                </div>
-            </div>
-            <div class="breakdown-card">
-                <h3><i class="fas fa-store"></i> Merchant Payments</h3>
-                <div class="breakdown-item">
-                    <span>Starbucks</span>
-                    <div class="breakdown-amount" id="starbucksAmount">₹0.00</div>
-                </div>
-                <div class="breakdown-item">
-                    <span>Uber</span>
-                    <div class="breakdown-amount" id="uberAmount">₹0.00</div>
-                </div>
-                <div class="breakdown-item">
-                    <span>Swiggy</span>
-                    <div class="breakdown-amount" id="swiggyAmount">₹0.00</div>
-                </div>
-                <div class="breakdown-item">
-                    <span>Other</span>
-                    <div class="breakdown-amount" id="otherMerchantAmount">₹0.00</div>
-                </div>
-            </div>
-            <div class="breakdown-card">
-                <h3><i class="fas fa-file-invoice"></i> Other Expenses</h3>
-                <div class="breakdown-item">
-                    <span>Gym</span>
-                    <div class="breakdown-amount" id="gymAmount">₹0.00</div>
-                </div>
-                <div class="breakdown-item">
-                    <span>Netflix</span>
-                    <div class="breakdown-amount" id="netflixAmount">₹0.00</div>
-                </div>
-                <div class="breakdown-item">
-                    <span>Electricity</span>
-                    <div class="breakdown-amount" id="electricityAmount">₹0.00</div>
-                </div>
-                <div class="breakdown-item">
-                    <span>Other</span>
-                    <div class="breakdown-amount" id="otherExpensesAmount">₹0.00</div>
-                </div>
-            </div>
-        </div>
-        <div class="insights-summary">
-            <div class="summary-card">
-                <i class="fas fa-calendar-alt fa-2x" style="color: var(--primary);"></i>
-                <div class="summary-value" id="totalMonthlyExpenses">₹0.00</div>
-                <div class="summary-label">Total Monthly Expenses</div>
-            </div>
-            <div class="summary-card">
-                <i class="fas fa-chart-line fa-2x" style="color: var(--success);"></i>
-                <div class="summary-value" id="dailyAvg">₹0.00</div>
-                <div class="summary-label">Daily Average</div>
-            </div>
-            <div class="summary-card">
-                <i class="fas fa-percentage fa-2x" style="color: var(--warning);"></i>
-                <div class="summary-value" id="shoppingShare">0%</div>
-                <div class="summary-label">Shopping Share</div>
-            </div>
-            <div class="summary-card">
-                <i class="fas fa-trending-up fa-2x" style="color: var(--danger);"></i>
-                <div class="summary-value" id="vsPrevious">0%</div>
-                <div class="summary-label">vs Previous Month</div>
-            </div>
-        </div>
-    </div>
-    <!-- Profile Page -->
-    <div class="container profile-page" id="profilePage">
-        <div class="profile-header">
-            <h1><i class="fas fa-user"></i> My Profile</h1>
-            <button class="back-btn" id="backToDashboardFromProfile">
-                <i class="fas fa-arrow-left"></i> Back to Dashboard
-            </button>
-        </div>
-        <div class="profile-content">
-            <div class="profile-card">
-                <div class="user-info">
-                    <div class="user-avatar" id="profileAvatar">
-                        <!-- Avatar will be displayed here -->
-                    </div>
-                    <div class="user-details">
-                        <div class="user-name" id="profileName">User Name</div>
-                        <div class="user-id" id="profileUserId">User ID</div>
-                        <div class="payment-id">
-                            <span>Your Payment ID: <strong id="profilePaymentId">USER000000</strong></span>
-                            <button class="copy-btn" id="copyPaymentId">Copy</button>
+        <div id="mainDashboardContent">
+            <h2 style="margin-bottom: 20px;">Welcome Back, <span id="welcomeUsername">User</span>!</h2>
+            <div class="main-content">
+                <div class="card pay-section">
+                    <h2><i class="fas fa-plus-circle"></i> Add New Expense</h2>
+                    <form id="expenseForm" class="payment-form">
+                        <div class="form-group">
+                            <label for="expenseDescription">Description (Optional)</label>
+                            <input type="text" id="expenseDescription" placeholder="e.g., Grocery shopping">
                         </div>
+                        <div class="form-group">
+                            <label for="expenseAmount">Amount (₹)</label>
+                            <input type="number" id="expenseAmount" placeholder="Enter amount" min="0.01" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="expenseCategory">Category</label>
+                            <select id="expenseCategory" required>
+                                <option value="shopping">Shopping</option>
+                                <option value="merchant">Utilities/Bills</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-pay">
+                            <i class="fas fa-credit-card"></i> Track Expense
+                        </button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h2><i class="fas fa-history"></i> Recent Activity</h2>
+                    <div class="expense-list" id="recentExpenseList">
+                        <p style="text-align: center; margin-top: 10px; color: var(--gray);">No recent expenses recorded.</p>
                     </div>
                 </div>
-                <div class="profile-item">
-                    <span>Email:</span>
-                    <span class="profile-value" id="profileEmail">-</span>
-                </div>
-                <div class="profile-item">
-                    <span>Phone:</span>
-                    <span class="profile-value" id="profilePhone">-</span>
-                </div>
-                <div class="profile-item">
-                    <span>Gender:</span>
-                    <span class="profile-value" id="profileGender">-</span>
-                </div>
-                <div class="profile-item">
-                    <span>Balance:</span>
-                    <span class="profile-value" id="profileBalance">₹0.00</span>
-                </div>
-                <button class="edit-profile-btn" id="editProfileBtn">
-                    <i class="fas fa-edit"></i> Edit Profile
-                </button>
             </div>
         </div>
-    </div>
-    <!-- Friends Page -->
-    <div class="container friends-page" id="friendsPage">
-        <div class="friends-header">
-            <h1><i class="fas fa-user-friends"></i> Friends</h1>
-            <button class="back-btn" id="backToDashboardFromFriends">
-                <i class="fas fa-arrow-left"></i> Back to Dashboard
-            </button>
+        <div id="insightsPageContent" class="insights-page">
+            <div class="insights-header">
+                <h2><i class="fas fa-chart-pie"></i> Detailed Insights</h2>
+                <button class="back-btn" id="insightsBackBtn"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+            </div>
+            <div class="chart-container">
+                <h3 class="chart-title">Expense Breakdown by Category</h3>
+                <canvas id="expenseChart" style="height: 300px;"></canvas>
+            </div>
+            <div class="insights-summary">
+                <div class="summary-card">
+                    <div class="summary-value" id="shoppingTotal">₹0.00</div>
+                    <div class="summary-label">Shopping</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value" id="merchantTotal">₹0.00</div>
+                    <div class="summary-label">Utilities/Bills</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value" id="otherTotal">₹0.00</div>
+                    <div class="summary-label">Other</div>
+                </div>
+            </div>
         </div>
-        <div class="friends-content" id="friendsList">
-            <!-- Friends will be added here dynamically -->
+        <div id="profilePageContent" class="profile-page">
+            <div class="profile-header">
+                <h2><i class="fas fa-user-circle"></i> User Profile</h2>
+                <button class="back-btn" id="profileBackBtn"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+            </div>
+            <div class="profile-content">
+                <div class="profile-card">
+                    <h3>Account Details</h3>
+                    <div class="profile-item"><span>Username:</span> <span id="profileUsername" class="profile-value"></span></div>
+                    <div class="profile-item"><span>Phone:</span> <span id="profilePhone" class="profile-value"></span></div>
+                    <div class="profile-item"><span>Account Created:</span> <span id="profileCreated" class="profile-value">Today</span></div>
+                    <button class="edit-profile-btn" id="editProfileBtn"><i class="fas fa-edit"></i> Edit Profile</button>
+                </div>
+                <div class="profile-card">
+                    <h3>Financial Overview</h3>
+                    <div class="profile-item"><span>Current Balance:</span> <span id="profileBalance" class="profile-value"></span></div>
+                    <div class="profile-item"><span>Total Spent:</span> <span id="profileTotalSpent" class="profile-value">₹0.00</span></div>
+                    <div class="profile-item"><span>Average Expense:</span> <span id="profileAvgExpense" class="profile-value">₹0.00</span></div>
+                </div>
+            </div>
+        </div>
+        <div id="friendsPageContent" class="friends-page">
+            <div class="friends-header">
+                <h2><i class="fas fa-users"></i> Friends & Split Expenses</h2>
+                <button class="back-btn" id="friendsBackBtn"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+            </div>
+            <div class="friends-content">
+                <div class="friend-card">
+                    <h3>Friends List (Placeholder)</h3>
+                    <div class="friend-item"><span>Friend 1:</span> <button class="call-btn"><i class="fas fa-phone"></i> Call</button></div>
+                    <div class="friend-item"><span>Friend 2:</span> <button class="call-btn"><i class="fas fa-phone"></i> Call</button></div>
+                    <p style="margin-top: 15px; color: var(--gray);">Friend functionality requires a server. This is a placeholder.</p>
+                </div>
+            </div>
         </div>
     </div>
     <div class="notification" id="notification">
-        <button class="close-btn">&times;</button>
-        <h3><i class="fas fa-check-circle"></i> Success!</h3>
-        <p id="notificationText">Action completed successfully</p>
+        <button class="close-btn" id="closeNotification">&times;</button>
+        <h3 id="notificationTitle">Success!</h3>
+        <p id="notificationMessage">Action completed successfully.</p>
     </div>
-    <footer>
-        <p>Finity &copy; 2025 - Your Personal Expense Tracker</p>
-    </footer>
+    <div class="chatbot-container">
+        <button class="chatbot-btn" id="chatbotToggleBtn">
+            <i class="fas fa-robot"></i>
+        </button>
+        <div class="chatbot-window hidden" id="chatbotWindow">
+            <div class="chatbot-header">Finity AI Advisor</div>
+            <div class="chatbot-messages" id="chatbotMessages">
+                <div class="message bot-message">Hello! I'm your Finity AI advisor. I can analyze your spending and give tips on saving. Ask me anything!</div>
+            </div>
+            <div class="chatbot-input">
+                <input type="text" id="chatbotInput" placeholder="Ask about your expenses...">
+                <button id="chatbotSendBtn"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // API Base URL - Adjust if your backend runs on a different port or server
-        const API_BASE_URL = 'http://localhost:3000/api';
+        const API_BASE_URL = 'http://localhost:3000/api'; // Flask server address
 
-        // Current User State (replaces localStorage.currentUser)
+        // --- Utility Functions ---
+        const showNotification = (title, message, isError = false) => {
+            const notification = document.getElementById('notification');
+            const titleEl = document.getElementById('notificationTitle');
+            const messageEl = document.getElementById('notificationMessage');
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            notification.style.borderLeftColor = isError ? 'var(--danger)' : 'var(--success)';
+            titleEl.style.color = isError ? 'var(--danger)' : 'var(--success)';
+            notification.classList.add('show');
+            setTimeout(() => { notification.classList.remove('show'); }, 3000);
+        };
+        const showSpinner = (btnId, textId, show) => {
+            const btnText = document.getElementById(textId);
+            const spinner = document.getElementById(btnId);
+            if (show) { btnText.style.display = 'none'; spinner.style.display = 'inline-block'; }
+            else { btnText.style.display = 'inline'; spinner.style.display = 'none'; }
+        };
+        const switchPage = (pageId) => {
+            document.querySelectorAll('.dashboard > div[id$="Content"], .dashboard > div[id$="page"], .dashboard').forEach(page => page.style.display = 'none');
+            if (pageId === 'dashboard') {
+                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('mainDashboardContent').style.display = 'block';
+            } else if (pageId === 'homepage') {
+                document.getElementById('homepage').style.display = 'flex';
+            } else {
+                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById(pageId + 'Content').style.display = 'block';
+            }
+        };
+        // --- Authentication and API Calls ---
         let currentUser = null;
-
-        // DOM Elements
-        const homepage = document.getElementById('homepage');
-        const dashboard = document.getElementById('dashboard');
-        const insightsPage = document.getElementById('insightsPage');
-        const profilePage = document.getElementById('profilePage');
-        const friendsPage = document.getElementById('friendsPage');
-        const notification = document.getElementById('notification');
-        const notificationText = document.getElementById('notificationText');
-        const closeBtn = document.querySelector('.close-btn');
-        const viewInsightsBtn = document.getElementById('viewInsightsBtn');
-        const backToDashboard = document.getElementById('backToDashboard');
-        const backToDashboardFromProfile = document.getElementById('backToDashboardFromProfile');
-        const backToDashboardFromFriends = document.getElementById('backToDashboardFromFriends');
-        const menuBtn = document.getElementById('menuBtn');
-        const menuDropdown = document.getElementById('menuDropdown');
-        const dashboardBtn = document.getElementById('dashboardBtn');
-        const insightsBtn = document.getElementById('insightsBtn');
-        const profileBtn = document.getElementById('profileBtn');
-        const friendsBtn = document.getElementById('friendsBtn');
-        const darkModeToggle = document.getElementById('darkModeToggle');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const logoutBtnMobile = document.getElementById('logoutBtnMobile');
-        const editProfileBtn = document.getElementById('editProfileBtn');
-        const copyPaymentId = document.getElementById('copyPaymentId');
-        const loginBtn = document.getElementById('loginBtn');
-        const loginBtnText = document.getElementById('loginBtnText');
-        const loginSpinner = document.getElementById('loginSpinner');
-        const showRegister = document.getElementById('showRegister');
-        const registerModal = document.getElementById('registerModal');
-        const closeRegister = document.getElementById('closeRegister');
-        const registerForm = document.getElementById('registerForm');
-        const switchToLogin = document.getElementById('switchToLogin');
-        const sendOtpBtn = document.getElementById('sendOtpBtn');
-        // Form elements
-        const paymentForm = document.getElementById('paymentForm');
-        const checkBalanceBtn = document.getElementById('checkBalanceBtn');
-
-        // Initialize the app
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if user is already logged in (e.g., using a token in localStorage, or session)
-            // For this demo, we'll rely on the frontend state after a successful login
-            // In a real app, you'd check for a token or make an API call to verify session
-            // const token = localStorage.getItem('finityToken'); // Example token storage
-            // if (token) {
-            //    fetchUserDetails(token); // Fetch user details using the token
-            // } else {
-            showHomepage();
-            // }
-
-            // Event listeners
-            document.getElementById('closeRegister').addEventListener('click', hideRegisterModal);
-            document.getElementById('switchToRegister').addEventListener('click', () => {
-                hideLoginModal();
-                showRegisterModal();
-            });
-            document.getElementById('switchToLogin').addEventListener('click', () => {
-                hideRegisterModal();
-                showHomepage();
-            });
-            paymentForm.addEventListener('submit', handlePayment);
-            checkBalanceBtn.addEventListener('click', showBalance);
-            editProfileBtn.addEventListener('click', showEditProfileModal);
-            copyPaymentId.addEventListener('click', copyToClipboard);
-            // Menu buttons
-            menuBtn.addEventListener('click', toggleMenu);
-            dashboardBtn.addEventListener('click', showDashboard);
-            insightsBtn.addEventListener('click', showInsights);
-            profileBtn.addEventListener('click', showProfile);
-            friendsBtn.addEventListener('click', showFriends);
-            darkModeToggle.addEventListener('click', toggleDarkMode);
-            logoutBtn.addEventListener('click', handleLogout);
-            logoutBtnMobile.addEventListener('click', handleLogout);
-            // Mobile menu buttons
-            document.getElementById('dashboardBtnMobile').addEventListener('click', () => {
-                showDashboard();
-                menuDropdown.classList.remove('show');
-            });
-            document.getElementById('insightsBtnMobile').addEventListener('click', () => {
-                showInsights();
-                menuDropdown.classList.remove('show');
-            });
-            document.getElementById('profileBtnMobile').addEventListener('click', () => {
-                showProfile();
-                menuDropdown.classList.remove('show');
-            });
-            document.getElementById('friendsBtnMobile').addEventListener('click', () => {
-                showFriends();
-                menuDropdown.classList.remove('show');
-            });
-            document.getElementById('darkModeToggleMobile').addEventListener('click', () => {
-                toggleDarkMode();
-                menuDropdown.classList.remove('show');
-            });
-            viewInsightsBtn.addEventListener('click', showInsights);
-            backToDashboard.addEventListener('click', showDashboard);
-            backToDashboardFromProfile.addEventListener('click', showDashboard);
-            backToDashboardFromFriends.addEventListener('click', showDashboard);
-            // Login button
-            document.getElementById('loginBtn').addEventListener('click', handleLogin);
-            document.getElementById('showRegister').addEventListener('click', showRegisterModal);
-            // Registration form
-            registerForm.addEventListener('submit', handleRegister);
-            sendOtpBtn.addEventListener('click', sendOtp);
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!menuBtn.contains(e.target) && !menuDropdown.contains(e.target)) {
-                    menuDropdown.classList.remove('show');
-                }
-            });
-            // Close notification when close button is clicked
-            closeBtn.addEventListener('click', function() {
-                notification.classList.remove('show');
-            });
-            // Start the notification check interval (if needed, though server-driven notifications are better)
-            // setInterval(checkNotifications, 1000);
-        });
-
-        // Show homepage
-        function showHomepage() {
+        document.addEventListener('DOMContentLoaded', () => {
+            const homepage = document.getElementById('homepage');
+            const dashboard = document.getElementById('dashboard');
+            const loginBtn = document.getElementById('loginBtn');
+            const registerModal = document.getElementById('registerModal');
+            const showRegisterLink = document.getElementById('showRegister');
+            const closeRegisterBtn = document.getElementById('closeRegister');
+            const registerForm = document.getElementById('registerForm');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const toggleDarkModeBtn = document.getElementById('toggleDarkMode');
+            const closeNotificationBtn = document.getElementById('closeNotification');
+            const expenseForm = document.getElementById('expenseForm');
+            // Initial check for logged-in user (can be done via session check on page load if needed)
+            // For simplicity here, we assume the page starts at homepage.
             homepage.style.display = 'flex';
             dashboard.style.display = 'none';
-            insightsPage.style.display = 'none';
-            profilePage.style.display = 'none';
-            friendsPage.style.display = 'none';
-        }
 
-        // Show register modal
-        function showRegisterModal() {
-            registerModal.style.display = 'flex';
-        }
+            toggleDarkModeBtn.addEventListener('click', () => { document.body.classList.toggle('dark-mode'); });
+            closeNotificationBtn.addEventListener('click', () => { document.getElementById('notification').classList.remove('show'); });
 
-        // Hide register modal
-        function hideRegisterModal() {
-            registerModal.style.display = 'none';
-        }
-
-        // Show dashboard
-        function showDashboard() {
-            if (!currentUser) {
-                 showNotification('Please login first', 'error');
-                 showHomepage(); // Redirect to homepage if not logged in
-                 return;
-            }
-            homepage.style.display = 'none';
-            dashboard.style.display = 'block';
-            insightsPage.style.display = 'none';
-            profilePage.style.display = 'none';
-            friendsPage.style.display = 'none';
-            updateDashboard();
-        }
-
-        // Send OTP for phone verification (Demo - just shows a message)
-        function sendOtp() {
-            const phone = document.getElementById('registerPhone').value;
-            if (!phone) {
-                showNotification('Please enter phone number', 'error');
-                return;
-            }
-            // In a real app, call an API endpoint to send OTP via SMS
-            // e.g., fetch(`${API_BASE_URL}/send-otp`, { method: 'POST', body: JSON.stringify({ phone }) })
-            showNotification(`Demo: OTP sent to ${phone} (Check console or logs)`);
-        }
-
-        // Handle registration
-        async function handleRegister(e) {
-            e.preventDefault();
-            const username = document.getElementById('registerUsername').value;
-            const password = document.getElementById('registerPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const phone = document.getElementById('registerPhone').value;
-            const otp = document.getElementById('otp').value; // In a real app, verify this OTP against the sent one
-
-            // Validation
-            if (!username || !password || !confirmPassword || !phone || !otp) {
-                showNotification('Please fill all fields', 'error');
-                return;
-            }
-            if (password !== confirmPassword) {
-                showNotification('Passwords do not match', 'error');
-                return;
-            }
-            if (password.length < 6) {
-                showNotification('Password must be at least 6 characters', 'error');
-                return;
-            }
-
-            // In a real app, you would verify the OTP here via an API call
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/register`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ username, password, phone }),
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    showNotification(`Account created successfully! Welcome, ${username}!`);
-                    hideRegisterModal();
-                    // Optionally, auto-login after registration
-                    document.getElementById('loginUsername').value = username;
-                    document.getElementById('loginPassword').value = password;
-                } else {
-                    showNotification(data.error || 'Registration failed', 'error');
+            // --- Login Logic ---
+            loginBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                showSpinner('loginSpinner', 'loginBtnText', true);
+                const username = document.getElementById('loginUsername').value.trim();
+                const password = document.getElementById('loginPassword').value;
+                if (!username || !password) {
+                    showNotification('Error', 'Please enter both username and password.', true);
+                    showSpinner('loginSpinner', 'loginBtnText', false);
+                    return;
                 }
-            } catch (error) {
-                console.error('Registration error:', error);
-                showNotification('Registration failed due to a network error.', 'error');
-            }
-        }
-
-        // Handle login
-        async function handleLogin() {
-            const username = document.getElementById('loginUsername').value;
-            const password = document.getElementById('loginPassword').value;
-
-            if (!username || !password) {
-                showNotification('Please enter username and password', 'error');
-                return;
-            }
-
-            // Show loading effect
-            loginBtnText.style.display = 'none';
-            loginSpinner.style.display = 'inline-block';
-            loginBtn.disabled = true;
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ username, password }),
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    currentUser = data; // Store user details received from backend
-                    showDashboard();
-                    showNotification(`Welcome back, ${data.username}!`);
-                } else {
-                    showNotification(data.error || 'Login failed', 'error');
-                }
-            } catch (error) {
-                console.error('Login error:', error);
-                showNotification('Login failed due to a network error.', 'error');
-            } finally {
-                // Reset button
-                loginBtnText.style.display = 'inline';
-                loginSpinner.style.display = 'none';
-                loginBtn.disabled = false;
-            }
-        }
-
-        // Handle payment
-        async function handlePayment(e) {
-            e.preventDefault();
-            if (!currentUser) {
-                showNotification('Please login first', 'error');
-                return;
-            }
-
-            const amount = parseFloat(document.getElementById('amount').value);
-            const description = document.getElementById('description').value || 'No description';
-            const recipientId = document.getElementById('recipientId').value.trim();
-            const category = document.getElementById('category').value;
-
-            if (isNaN(amount) || amount <= 0) {
-                showNotification('Please enter a valid amount', 'error');
-                return;
-            }
-            if (!recipientId) {
-                showNotification('Please enter recipient ID', 'error');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/payment`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        fromUserId: currentUser.id, // Send current user ID from frontend state
-                        toUserId: recipientId,
-                        amount,
-                        description,
-                        category
-                    }),
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    showNotification(data.message);
-                    // Refresh user details (including balance) and transactions
-                    await fetchUserDetails(currentUser.id);
-                    await fetchTransactions(currentUser.id);
-                    // Reset form
-                    document.getElementById('amount').value = '';
-                    document.getElementById('description').value = '';
-                    document.getElementById('recipientId').value = '';
-                    document.getElementById('category').value = '';
-                } else {
-                    showNotification(data.error || 'Payment failed', 'error');
-                }
-            } catch (error) {
-                console.error('Payment error:', error);
-                showNotification('Payment failed due to a network error.', 'error');
-            }
-        }
-
-        // Show balance (Uses current state)
-        function showBalance() {
-            if (!currentUser) {
-                showNotification('Please login first', 'error');
-                return;
-            }
-            showNotification(`Your balance is ₹${currentUser.balance.toFixed(2)}`);
-        }
-
-        // Show profile
-        async function showProfile() {
-            if (!currentUser) {
-                showNotification('Please login first', 'error');
-                return;
-            }
-            homepage.style.display = 'none';
-            dashboard.style.display = 'none';
-            insightsPage.style.display = 'none';
-            friendsPage.style.display = 'none';
-            profilePage.style.display = 'block';
-            await updateProfilePage(currentUser.id); // Fetch latest profile data from backend
-        }
-
-        // Update profile page
-        async function updateProfilePage(userId) {
-            if (!userId) return;
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/profile/${userId}`);
-                const user = await response.json();
-
-                if (response.ok) {
-                    document.getElementById('profileName').textContent = user.username;
-                    document.getElementById('profileUserId').textContent = `User ID: ${user.id}`;
-                    document.getElementById('profilePaymentId').textContent = user.id;
-                    document.getElementById('profileEmail').textContent = user.email || '-';
-                    document.getElementById('profilePhone').textContent = user.phone || '-';
-                    document.getElementById('profileGender').textContent = user.gender || '-';
-                    document.getElementById('profileBalance').textContent = `₹${user.balance.toFixed(2)}`;
-                    // Update avatar
-                    const avatar = document.getElementById('profileAvatar');
-                    if (user.profile_photo) {
-                        avatar.innerHTML = `<img src="${user.profile_photo}" alt="Profile">`;
-                    } else {
-                        const initials = user.username.charAt(0).toUpperCase();
-                        avatar.innerHTML = initials;
-                    }
-                } else {
-                    showNotification(user.error || 'Failed to fetch profile', 'error');
-                }
-            } catch (error) {
-                console.error('Profile fetch error:', error);
-                showNotification('Failed to fetch profile due to a network error.', 'error');
-            }
-        }
-
-        // Show friends
-        async function showFriends() {
-            if (!currentUser) {
-                showNotification('Please login first', 'error');
-                return;
-            }
-            homepage.style.display = 'none';
-            dashboard.style.display = 'none';
-            insightsPage.style.display = 'none';
-            profilePage.style.display = 'none';
-            friendsPage.style.display = 'block';
-            await updateFriendsPage(); // Fetch users from backend
-        }
-
-        // Update friends page
-        async function updateFriendsPage() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/users`);
-                const users = await response.json();
-
-                if (response.ok) {
-                    const friendsList = document.getElementById('friendsList');
-                    friendsList.innerHTML = '';
-
-                    users.forEach(user => {
-                        if (user.id !== currentUser.id) { // Exclude current user
-                            const friendCard = document.createElement('div');
-                            friendCard.classList.add('friend-card');
-                            friendCard.innerHTML = `
-                                <h3>${user.username}</h3>
-                                <div class="friend-item">
-                                    <span>User ID:</span>
-                                    <span class="friend-value">${user.id}</span>
-                                </div>
-                                <div class="friend-item">
-                                    <span>Balance:</span>
-                                    <span class="friend-value">₹${user.balance.toFixed(2)}</span>
-                                </div>
-                                <div class="friend-item">
-                                    <span>Status:</span>
-                                    <span class="friend-value">Online</span>
-                                    <button class="call-btn" onclick="initiateCall('${user.id}')">
-                                        <i class="fas fa-phone"></i> Call
-                                    </button>
-                                </div>
-                            `;
-                            friendsList.appendChild(friendCard);
-                        }
+                try {
+                    const response = await fetch(`${API_BASE_URL}/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
                     });
-                } else {
-                    showNotification(users.error || 'Failed to fetch users', 'error');
-                }
-            } catch (error) {
-                console.error('Users fetch error:', error);
-                showNotification('Failed to fetch users due to a network error.', 'error');
-            }
-        }
-
-        // Initiate call (demo)
-        function initiateCall(userId) {
-            showNotification(`Calling user ${userId}... (This is a demo feature)`);
-        }
-
-        // Show insights
-        function showInsights() {
-            if (!currentUser) {
-                 showNotification('Please login first', 'error');
-                 showHomepage();
-                 return;
-            }
-            homepage.style.display = 'none';
-            dashboard.style.display = 'none';
-            profilePage.style.display = 'none';
-            friendsPage.style.display = 'none';
-            insightsPage.style.display = 'block';
-            updateInsights(); // Update insights based on current state
-        }
-
-        // Update dashboard with user data from backend state
-        async function updateDashboard() {
-            if (!currentUser) return;
-
-            document.getElementById('balanceDisplay').textContent = `₹${currentUser.balance.toFixed(2)}`;
-            document.getElementById('totalBalance').textContent = `₹${currentUser.balance.toFixed(2)}`;
-
-            // Fetch transactions to calculate stats and update list
-            await fetchTransactions(currentUser.id);
-
-            // Calculate monthly expenses from fetched transactions
-            const now = new Date();
-            const monthlyExpenses = currentUser.transactions
-                .filter(transaction => {
-                    // Only count outgoing payments made by the user
-                    const isOutgoingPayment = transaction.from_user_id === currentUser.id;
-                    const transactionDate = new Date(transaction.date);
-                    return isOutgoingPayment &&
-                           transactionDate.getMonth() === now.getMonth() &&
-                           transactionDate.getFullYear() === now.getFullYear();
-                })
-                .reduce((sum, transaction) => sum + transaction.amount, 0);
-
-            document.getElementById('monthlyExpenses').textContent = `₹${monthlyExpenses.toFixed(2)}`;
-            document.getElementById('monthlyExpenditure').textContent = `₹${monthlyExpenses.toFixed(2)}`;
-
-            // Calculate daily average
-            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-            const dailyAverage = monthlyExpenses / daysInMonth;
-            document.getElementById('dailyAverage').textContent = `₹${dailyAverage.toFixed(2)}`;
-            document.getElementById('dailyExpenditure').textContent = `₹${dailyAverage.toFixed(2)}`;
-
-            // Calculate expense segregation from fetched transactions
-            const shoppingExpenses = currentUser.transactions
-                .filter(transaction => transaction.from_user_id === currentUser.id && transaction.category === 'shopping')
-                .reduce((sum, transaction) => sum + transaction.amount, 0);
-            const merchantExpenses = currentUser.transactions
-                .filter(transaction => transaction.from_user_id === currentUser.id && transaction.category === 'merchant')
-                .reduce((sum, transaction) => sum + transaction.amount, 0);
-            const otherExpenses = currentUser.transactions
-                .filter(transaction => transaction.from_user_id === currentUser.id && transaction.category === 'other')
-                .reduce((sum, transaction) => sum + transaction.amount, 0);
-
-            document.getElementById('shoppingAmount').textContent = `₹${shoppingExpenses.toFixed(2)}`;
-            document.getElementById('merchantAmount').textContent = `₹${merchantExpenses.toFixed(2)}`;
-            document.getElementById('otherAmount').textContent = `₹${otherExpenses.toFixed(2)}`;
-        }
-
-        // Update insights page with user data from backend state
-        function updateInsights() {
-            if (!currentUser) return;
-
-            // Calculate monthly expenses from fetched transactions
-            const now = new Date();
-            const monthlyExpenses = currentUser.transactions
-                .filter(transaction => {
-                    const isOutgoingPayment = transaction.from_user_id === currentUser.id;
-                    const transactionDate = new Date(transaction.date);
-                    return isOutgoingPayment &&
-                           transactionDate.getMonth() === now.getMonth() &&
-                           transactionDate.getFullYear() === now.getFullYear();
-                })
-                .reduce((sum, transaction) => sum + transaction.amount, 0);
-
-            // Calculate expense segregation from fetched transactions
-            const shoppingExpenses = currentUser.transactions
-                .filter(transaction => transaction.from_user_id === currentUser.id && transaction.category === 'shopping')
-                .reduce((sum, transaction) => sum + transaction.amount, 0);
-            const merchantExpenses = currentUser.transactions
-                .filter(transaction => transaction.from_user_id === currentUser.id && transaction.category === 'merchant')
-                .reduce((sum, transaction) => sum + transaction.amount, 0);
-            const otherExpenses = currentUser.transactions
-                .filter(transaction => transaction.from_user_id === currentUser.id && transaction.category === 'other')
-                .reduce((sum, transaction) => sum + transaction.amount, 0);
-
-            // Update chart values
-            document.getElementById('shoppingValue').textContent = `₹${shoppingExpenses.toFixed(2)}`;
-            document.getElementById('merchantValue').textContent = `₹${merchantExpenses.toFixed(2)}`;
-            document.getElementById('otherValue').textContent = `₹${otherExpenses.toFixed(2)}`;
-
-            // Update breakdown values (simplified for demo)
-            document.getElementById('amazonAmount').textContent = `₹${(shoppingExpenses * 0.4).toFixed(2)}`;
-            document.getElementById('flipkartAmount').textContent = `₹${(shoppingExpenses * 0.3).toFixed(2)}`;
-            document.getElementById('etsyAmount').textContent = `₹${(shoppingExpenses * 0.2).toFixed(2)}`;
-            document.getElementById('otherShoppingAmount').textContent = `₹${(shoppingExpenses * 0.1).toFixed(2)}`;
-            document.getElementById('starbucksAmount').textContent = `₹${(merchantExpenses * 0.3).toFixed(2)}`;
-            document.getElementById('uberAmount').textContent = `₹${(merchantExpenses * 0.25).toFixed(2)}`;
-            document.getElementById('swiggyAmount').textContent = `₹${(merchantExpenses * 0.25).toFixed(2)}`;
-            document.getElementById('otherMerchantAmount').textContent = `₹${(merchantExpenses * 0.2).toFixed(2)}`;
-            document.getElementById('gymAmount').textContent = `₹${(otherExpenses * 0.3).toFixed(2)}`;
-            document.getElementById('netflixAmount').textContent = `₹${(otherExpenses * 0.25).toFixed(2)}`;
-            document.getElementById('electricityAmount').textContent = `₹${(otherExpenses * 0.25).toFixed(2)}`;
-            document.getElementById('otherExpensesAmount').textContent = `₹${(otherExpenses * 0.2).toFixed(2)}`;
-
-            // Update summary
-            document.getElementById('totalMonthlyExpenses').textContent = `₹${monthlyExpenses.toFixed(2)}`;
-            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-            const dailyAverage = monthlyExpenses / daysInMonth;
-            document.getElementById('dailyAvg').textContent = `₹${dailyAverage.toFixed(2)}`;
-            const shoppingShare = (shoppingExpenses / monthlyExpenses) * 100 || 0;
-            document.getElementById('shoppingShare').textContent = `${shoppingShare.toFixed(0)}%`;
-            // For demo purposes, show a positive trend
-            document.getElementById('vsPrevious').textContent = '+12%';
-        }
-
-        // Fetch transactions from backend and update state/list
-        async function fetchTransactions(userId) {
-            if (!userId) return;
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/transactions/${userId}`);
-                const transactions = await response.json();
-
-                if (response.ok) {
-                    // Update frontend state with fetched transactions
-                    currentUser.transactions = transactions;
-                    updateExpenseList();
-                } else {
-                    showNotification(transactions.error || 'Failed to fetch transactions', 'error');
-                }
-            } catch (error) {
-                console.error('Transactions fetch error:', error);
-                showNotification('Failed to fetch transactions due to a network error.', 'error');
-            }
-        }
-
-        // Update expense list from current state
-        function updateExpenseList() {
-            const expenseList = document.getElementById('expenseList');
-            expenseList.innerHTML = '';
-
-            if (!currentUser || !currentUser.transactions) return;
-
-            // Get recent transactions (last 5)
-            const recentTransactions = [...currentUser.transactions].reverse().slice(0, 5);
-            recentTransactions.forEach(transaction => {
-                const expenseItem = document.createElement('div');
-                expenseItem.classList.add('expense-item');
-
-                // Determine category and styling based on transaction type and category
-                let category = 'other';
-                let description = transaction.description;
-                let amountSign = '';
-
-                if (transaction.from_user_id === currentUser.id) {
-                    // This is a payment made by the current user
-                    amountSign = '-';
-                    if (transaction.category === 'shopping') {
-                        expenseItem.classList.add('shopping');
-                        category = 'shopping';
-                    } else if (transaction.category === 'merchant') {
-                        expenseItem.classList.add('merchant');
-                        category = 'merchant';
+                    const data = await response.json();
+                    if (response.ok) {
+                        currentUser = data.user;
+                        homepage.style.display = 'none';
+                        dashboard.style.display = 'block';
+                        updateDashboardUI(currentUser);
+                        showNotification('Success', `Login successful! Welcome back, ${currentUser.username}.`);
                     } else {
-                        expenseItem.classList.add('other');
-                        category = 'other';
+                        showNotification('Error', data.error || 'Login failed', true);
                     }
-                    description = `To ${transaction.to_user_id}: ${description}`;
-                } else if (transaction.to_user_id === currentUser.id) {
-                    // This is a payment received by the current user
-                    amountSign = '+';
-                    expenseItem.classList.add('merchant'); // Could use a different class for received
-                    category = 'payment';
-                    description = `From ${transaction.from_user_id}: ${description}`;
-                } else {
-                    // This shouldn't happen if the query is correct, but handle it
-                    expenseItem.classList.add('other');
-                    category = 'other';
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showNotification('Error', 'Network error during login.', true);
+                } finally {
+                    showSpinner('loginSpinner', 'loginBtnText', false);
                 }
-
-                expenseItem.innerHTML = `
-                    <div class="expense-details">
-                        <div class="expense-description">${description}</div>
-                        <div class="expense-category category-${category}">${getCategoryName(category)}</div>
-                    </div>
-                    <div class="expense-amount">${amountSign}₹${transaction.amount.toFixed(2)}</div>
-                `;
-                expenseList.appendChild(expenseItem);
             });
-        }
 
-        // Add expense to the list (Not needed if fetching from backend)
-        // function addExpenseToList(amount, description, category, recipientId) { ... }
+            // --- Show/Hide Registration Modal ---
+            showRegisterLink.addEventListener('click', (e) => { e.preventDefault(); registerModal.style.display = 'flex'; });
+            closeRegisterBtn.addEventListener('click', () => { registerModal.style.display = 'none'; });
+            registerModal.addEventListener('click', (e) => { if (e.target === registerModal) registerModal.style.display = 'none'; });
 
-        // Get category name
-        function getCategoryName(category) {
-            switch(category) {
-                case 'shopping': return 'Online Shopping';
-                case 'merchant': return 'Merchant Payment';
-                case 'other': return 'Other';
-                case 'payment': return 'Payment Received';
-                default: return 'Unknown';
-            }
-        }
+            // --- Registration Logic ---
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                showSpinner('registerSpinner', 'registerBtnText', true);
+                const username = document.getElementById('registerUsername').value.trim();
+                const password = document.getElementById('registerPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const phone = document.getElementById('registerPhone').value.trim();
+                const initialBalance = parseFloat(document.getElementById('initialBalance').value); // Capture initial balance
 
-        // Fetch user details from backend (e.g., after payment to update balance)
-        async function fetchUserDetails(userId) {
-             if (!userId) return;
-
-             try {
-                 const response = await fetch(`${API_BASE_URL}/profile/${userId}`);
-                 const user = await response.json();
-
-                 if (response.ok) {
-                     // Update the current user state with the fetched details (especially balance)
-                     currentUser = { ...currentUser, balance: user.balance };
-                     // Update balance display if on dashboard
-                     if (dashboard.style.display === 'block') {
-                         document.getElementById('balanceDisplay').textContent = `₹${currentUser.balance.toFixed(2)}`;
-                         document.getElementById('totalBalance').textContent = `₹${currentUser.balance.toFixed(2)}`;
-                     }
-                 } else {
-                     console.error('Failed to fetch updated user details:', user.error);
-                     // Optionally show a notification
-                     // showNotification('Failed to refresh user data.', 'error');
-                 }
-             } catch (error) {
-                 console.error('Error fetching user details:', error);
-                 // Optionally show a notification
-                 // showNotification('Error refreshing user data.', 'error');
-             }
-        }
-
-        // Show notification
-        function showNotification(message, type = 'success') {
-            notificationText.textContent = message;
-            if (type === 'error') {
-                notification.querySelector('h3').innerHTML = '<i class="fas fa-exclamation-circle"></i> Error!';
-                notification.style.borderLeftColor = '#f72585';
-            } else {
-                notification.querySelector('h3').innerHTML = '<i class="fas fa-check-circle"></i> Success!';
-                notification.style.borderLeftColor = '#4cc9f0';
-            }
-            notification.classList.add('show');
-            // Auto-hide notification after 5 seconds
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 5000);
-        }
-
-        // Copy to clipboard
-        function copyToClipboard() {
-            const text = currentUser.id;
-            navigator.clipboard.writeText(text).then(() => {
-                showNotification('User ID copied to clipboard!');
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-                showNotification('Failed to copy User ID', 'error');
+                if (password !== confirmPassword) {
+                    showNotification('Error', 'Passwords do not match.', true);
+                    showSpinner('registerSpinner', 'registerBtnText', false);
+                    return;
+                }
+                if (!username || !password || !phone || isNaN(initialBalance)) {
+                    showNotification('Error', 'Please fill in all fields correctly.', true);
+                    showSpinner('registerSpinner', 'registerBtnText', false);
+                    return;
+                }
+                try {
+                    const response = await fetch(`${API_BASE_URL}/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            username, 
+                            password, 
+                            phone,
+                            initial_balance: initialBalance 
+                        })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        showNotification('Success', 'Registration successful! You can now log in.');
+                        registerModal.style.display = 'none';
+                    } else {
+                        showNotification('Error', data.error || 'Registration failed', true);
+                    }
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    showNotification('Error', 'Network error during registration.', true);
+                } finally {
+                    showSpinner('registerSpinner', 'registerBtnText', false);
+                }
             });
-        }
 
-        // Toggle menu dropdown
-        function toggleMenu() {
-            menuDropdown.classList.toggle('show');
-        }
+            // --- Logout Logic ---
+            logoutBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                try {
+                    await fetch(`${API_BASE_URL}/logout`, { method: 'POST' });
+                    currentUser = null;
+                    document.getElementById('loginUsername').value = '';
+                    document.getElementById('loginPassword').value = '';
+                    switchPage('homepage');
+                    showNotification('Success', 'You have been logged out.');
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    // Still redirect to homepage even if backend logout fails
+                    currentUser = null;
+                    switchPage('homepage');
+                    showNotification('Info', 'Logged out locally.');
+                }
+            });
 
-        // Toggle dark mode
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            menuDropdown.classList.remove('show');
-        }
+            // --- Navigation Logic ---
+            document.getElementById('navDashboard').addEventListener('click', () => switchPage('mainDashboard'));
+            document.getElementById('navInsights').addEventListener('click', () => {
+                switchPage('insightsPage');
+                if (currentUser) updateInsightsUI(currentUser.id);
+            });
+            document.getElementById('navProfile').addEventListener('click', () => {
+                switchPage('profilePage');
+                if (currentUser) updateProfileUI(currentUser.id);
+            });
+            document.getElementById('navFriends').addEventListener('click', () => switchPage('friendsPage'));
+            document.getElementById('insightsBackBtn').addEventListener('click', () => switchPage('mainDashboard'));
+            document.getElementById('profileBackBtn').addEventListener('click', () => switchPage('mainDashboard'));
+            document.getElementById('friendsBackBtn').addEventListener('click', () => switchPage('mainDashboard'));
 
-        // Handle logout
-        function handleLogout() {
-            currentUser = null; // Clear frontend user state
-            // localStorage.removeItem('finityToken'); // If using tokens
-            showHomepage();
-            showNotification('Logged out successfully');
-        }
+            // --- Expense Tracker Logic ---
+            const updateDashboardUI = (user) => {
+                document.getElementById('currentBalanceDisplay').innerHTML = `<i class="fas fa-rupee-sign"></i> ${user.balance.toFixed(2)}`;
+                document.getElementById('welcomeUsername').textContent = user.username;
+                fetchRecentExpenses(user.id);
+            };
+            const fetchRecentExpenses = async (userId) => {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/get_expenses`);
+                    const expenses = await response.json();
+                    if (response.ok) {
+                        renderExpenses(expenses);
+                    } else {
+                        console.error('Failed to fetch expenses:', expenses.error);
+                        showNotification('Error', 'Failed to load recent expenses.', true);
+                    }
+                } catch (error) {
+                    console.error('Error fetching expenses:', error);
+                    showNotification('Error', 'Network error loading expenses.', true);
+                }
+            };
+            const renderExpenses = (expenses) => {
+                const listEl = document.getElementById('recentExpenseList');
+                listEl.innerHTML = '';
+                if (expenses.length === 0) {
+                     listEl.innerHTML = '<p style="text-align: center; margin-top: 10px; color: var(--gray);">No recent expenses recorded.</p>';
+                     return;
+                }
+                expenses.forEach(exp => {
+                    const item = document.createElement('div');
+                    item.classList.add('expense-item', exp.category);
+                    item.innerHTML = `
+                        <div class="expense-details">
+                            <strong>${exp.description || 'No Description'}</strong>
+                            <span class="expense-category category-${exp.category}">${exp.category.charAt(0).toUpperCase() + exp.category.slice(1)}</span>
+                        </div>
+                        <div class="expense-amount">
+                            - ₹${exp.amount.toFixed(2)}
+                        </div>
+                    `;
+                    listEl.appendChild(item);
+                });
+            };
+            expenseForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!currentUser) {
+                    showNotification('Error', 'You must be logged in to add an expense.', true);
+                    return;
+                }
+                const description = document.getElementById('expenseDescription').value.trim();
+                const amount = parseFloat(document.getElementById('expenseAmount').value);
+                const category = document.getElementById('expenseCategory').value;
 
-        // Placeholder for Edit Profile Modal (needs implementation)
-        function showEditProfileModal() {
-            showNotification('Edit Profile feature is not implemented in this demo.', 'info');
-            // In a real app, you would fetch current profile data, fill a modal form,
-            // and have a submit handler to PUT /api/profile/:userId
-        }
+                if (isNaN(amount) || amount <= 0) {
+                    showNotification('Error', 'Please enter a valid amount.', true);
+                    return;
+                }
+                try {
+                    const response = await fetch(`${API_BASE_URL}/add_expense`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ description, amount, category })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        // Update the current user's balance in the frontend state
+                        currentUser.balance = data.new_balance;
+                        updateDashboardUI(currentUser); // Update balance and refetch expenses
+                        showNotification('Success', `Expense of ₹${amount.toFixed(2)} added successfully.`);
+                        document.getElementById('expenseForm').reset(); // Reset the form
+                    } else {
+                        showNotification('Error', data.error || 'Failed to add expense.', true);
+                    }
+                } catch (error) {
+                    console.error('Add expense error:', error);
+                    showNotification('Error', 'Network error adding expense.', true);
+                }
+            });
+
+            // Insights UI Update
+            let expenseChart;
+            const updateInsightsUI = async (userId) => {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/get_insights`);
+                    const insights = await response.json();
+                    const chartContainer = document.getElementById('insightsPageContent').querySelector('.chart-container');
+
+                    if (response.ok) {
+                        // Update summary totals first
+                        document.getElementById('shoppingTotal').textContent = `₹${insights.shopping_spent.toFixed(2)}`;
+                        document.getElementById('merchantTotal').textContent = `₹${insights.merchant_spent.toFixed(2)}`;
+                        document.getElementById('otherTotal').textContent = `₹${insights.other_spent.toFixed(2)}`;
+
+                        // --- CHART RENDERING LOGIC ---
+                        if (insights.total_spent === 0) {
+                            // Display fallback message when no expenses are recorded
+                            if (expenseChart) expenseChart.destroy();
+                            chartContainer.innerHTML = '<h3 class="chart-title">Expense Breakdown by Category</h3><p style="text-align:center; color: var(--gray);">No expenses recorded yet to generate insights. Add an expense to see the chart!</p>';
+                            return;
+                        }
+
+                        // Re-add or find the canvas element if it was replaced by a message
+                        let ctx = document.getElementById('expenseChart');
+                        if (!ctx || ctx.tagName !== 'CANVAS') {
+                            chartContainer.innerHTML = '<h3 class="chart-title">Expense Breakdown by Category</h3><canvas id="expenseChart" style="height: 300px;"></canvas>';
+                            ctx = document.getElementById('expenseChart');
+                        }
+
+                        const categories = ['shopping', 'merchant', 'other'];
+                        const data = categories.map(cat => insights[`${cat}_spent`]);
+                        const labels = categories.map(c => c.charAt(0).toUpperCase() + c.slice(1));
+                        const colors = ['#f8961e', '#4cc9f0', 'var(--gray)'];
+
+                        if (expenseChart) expenseChart.destroy();
+                        expenseChart = new Chart(ctx.getContext('2d'), {
+                            type: 'doughnut',
+                            data: { // CORRECTED: This was the source of the chart rendering failure
+                                labels, 
+                                datasets: [{ 
+                                    data, 
+                                    backgroundColor: colors, 
+                                    hoverOffset: 4 
+                                }] 
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { position: 'top' }, title: { display: true, text: 'Expense Breakdown by Category' } }
+                            }
+                        });
+                        // --- END CHART RENDERING LOGIC ---
+
+                    } else {
+                        console.error('Failed to fetch insights:', insights.error);
+                        showNotification('Error', 'Failed to load insights.', true);
+                    }
+                } catch (error) {
+                    console.error('Error fetching insights:', error);
+                    showNotification('Error', 'Network error loading insights.', true);
+                }
+            };
+            // Profile UI Update
+            const updateProfileUI = async (userId) => {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/get_user_details`);
+                    const user = await response.json();
+                    if (response.ok) {
+                        document.getElementById('profileUsername').textContent = user.username;
+                        document.getElementById('profilePhone').textContent = user.phone || 'Not provided';
+                        document.getElementById('profileBalance').textContent = `₹${user.balance.toFixed(2)}`;
+                        // Fetch insights to get total spent for the profile view
+                        const insightsResponse = await fetch(`${API_BASE_URL}/get_insights`);
+                        const insights = await insightsResponse.json();
+
+                        if (insightsResponse.ok) {
+                            const totalSpent = insights.total_spent;
+                            document.getElementById('profileTotalSpent').textContent = `₹${totalSpent.toFixed(2)}`;
+                            
+                            // Simple Avg Expense calculation (requires total expenses count, which we don't have easily)
+                            // Placeholder for now, assume we can't easily calculate without fetching all expenses and counting.
+                            document.getElementById('profileAvgExpense').textContent = `₹N/A`;
+                        } else {
+                             document.getElementById('profileTotalSpent').textContent = `₹N/A`;
+                             document.getElementById('profileAvgExpense').textContent = `₹N/A`;
+                        }
+
+                    } else {
+                        console.error('Failed to fetch profile:', user.error);
+                        showNotification('Error', 'Failed to load profile.', true);
+                    }
+                } catch (error) {
+                    console.error('Error fetching profile:', error);
+                    showNotification('Error', 'Network error loading profile.', true);
+                }
+            };
+
+            // --- Chatbot Integration ---
+            const chatbotToggleBtn = document.getElementById('chatbotToggleBtn');
+            const chatbotWindow = document.getElementById('chatbotWindow');
+            const chatbotMessages = document.getElementById('chatbotMessages');
+            const chatbotInput = document.getElementById('chatbotInput');
+            const chatbotSendBtn = document.getElementById('chatbotSendBtn');
+
+            chatbotToggleBtn.addEventListener('click', () => chatbotWindow.classList.toggle('hidden'));
+
+            const appendMessage = (message, isUser = false) => {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', isUser ? 'user-message' : 'bot-message');
+                messageDiv.textContent = message;
+                chatbotMessages.appendChild(messageDiv);
+                chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+            };
+
+            const handleChatMessage = async () => {
+                const message = chatbotInput.value.trim();
+                if (!message) return;
+
+                appendMessage(message, true);
+                chatbotInput.value = '';
+
+                const typingIndicator = document.createElement('div');
+                typingIndicator.classList.add('message', 'bot-message');
+                typingIndicator.textContent = 'Thinking...';
+                chatbotMessages.appendChild(typingIndicator);
+                chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/chat`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        chatbotMessages.removeChild(typingIndicator);
+                        appendMessage(data.response, false);
+                    } else {
+                        throw new Error(data.error || 'Chat API error');
+                    }
+                } catch (error) {
+                    console.error("Chatbot error:", error);
+                    chatbotMessages.removeChild(typingIndicator);
+                    appendMessage("Sorry, I encountered an error. Please try again.", false);
+                }
+            };
+
+            chatbotSendBtn.addEventListener('click', handleChatMessage);
+            chatbotInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleChatMessage(); });
+        });
     </script>
 </body>
 </html>
-
