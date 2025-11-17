@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finity - Expense Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --dark: #1d3557;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+        }
+
+        .logo h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .money-display {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f4f8;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2 i {
+            color: var(--secondary);
+        }
+
+        .pay-section {
+            background: linear-gradient(to right, #4cc9f0, #4895ef);
+        }
+
+        .pay-section h2 {
+            color: white;
+        }
+
+        .pay-section h2 i {
+            color: white;
+        }
+
+        .payment-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #444;
+        }
+
+        .form-group input, 
+        .form-group select {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-pay {
+            background: #ff9e00;
+            color: white;
+        }
+
+        .btn-pay:hover {
+            background: #ff8c00;
+            transform: scale(1.02);
+        }
+
+        .btn-insight {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-insight:hover {
+            background: var(--secondary);
+            transform: scale(1.02);
+        }
+
+        .expense-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .expense-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--primary);
+        }
+
+        .expense-item.shopping {
+            border-left-color: #f8961e;
+        }
+
+        .expense-item.merchant {
+            border-left-color: #4cc9f0;
+        }
+
+        .expense-item.other {
+            border-left-color: var(--gray);
+        }
+
+        .expense-details {
+            flex: 1;
+        }
+
+        .expense-amount {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--danger);
+        }
+
+        .expense-category {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .category-shopping {
+            background: #fff8e6;
+            color: #f8961e;
+        }
+
+        .category-merchant {
+            background: #e6f7ff;
+            color: #4cc9f0;
+        }
+
+        .category-other {
+            background: #f0f0f0;
+            color: var(--gray);
+        }
+
+        .insights {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .insight-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .insight-card h3 {
+            color: var(--gray);
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .insight-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .expense-segregation {
+            margin-top: 20px;
+        }
+
+        .segregation-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .segregation-bar {
+            height: 10px;
+            background: var(--primary);
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateX(120%);
+            transition: transform 0.4s ease;
+            z-index: 1000;
+            max-width: 350px;
+            border-left: 5px solid var(--success);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification h3 {
+            color: var(--success);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-weight: 600;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray);
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-coins"></i>
+                <h1>Finity</h1>
+            </div>
+            <div class="money-display">
+                <i class="fas fa-wallet"></i>
+                <span>$1,248.50</span>
+            </div>
+        </header>
+
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="stat-value">$1,248.50</div>
+                <div class="stat-label">Total Balance</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">$342.75</div>
+                <div class="stat-label">Monthly Expenses</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">$45.60</div>
+                <div class="stat-label">Daily Average</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="card pay-section">
+                <h2><i class="fas fa-credit-card"></i> Add Payment</h2>
+                <form class="payment-form" id="paymentForm">
+                    <div class="form-group">
+                        <label for="amount">Amount ($)</label>
+                        <input type="number" id="amount" placeholder="Enter amount" min="0.01" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <input type="text" id="description" placeholder="What was this for?" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" required>
+                            <option value="">Select category</option>
+                            <option value="shopping">Online Shopping</option>
+                            <option value="merchant">Merchant Payment</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-pay">
+                        <i class="fas fa-money-bill-wave"></i> Pay Now
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-chart-line"></i> Expense Insights</h2>
+                <div class="insights">
+                    <div class="insight-card">
+                        <h3>Daily Expenditure</h3>
+                        <div class="insight-value">$45.60</div>
+                    </div>
+                    <div class="insight-card">
+                        <h3>Monthly Expenditure</h3>
+                        <div class="insight-value">$342.75</div>
+                    </div>
+                </div>
+                
+                <div class="expense-segregation">
+                    <h3 style="margin: 20px 0 15px; color: var(--dark);">Expense Segregation</h3>
+                    <div class="segregation-item">
+                        <span>Online Shopping</span>
+                        <span>$185.50</span>
+                    </div>
+                    <div class="segregation-bar" style="width: 70%; background: #f8961e;"></div>
+                    
+                    <div class="segregation-item">
+                        <span>Merchant Payments</span>
+                        <span>$120.25</span>
+                    </div>
+                    <div class="segregation-bar" style="width: 45%; background: #4cc9f0;"></div>
+                    
+                    <div class="segregation-item">
+                        <span>Other Expenses</span>
+                        <span>$37.00</span>
+                    </div>
+                    <div class="segregation-bar" style="width: 15%; background: var(--gray);"></div>
+                </div>
+                
+                <button class="btn btn-insight" style="margin-top: 25px; width: 100%;">
+                    <i class="fas fa-chart-pie"></i> View Detailed Insights
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-receipt"></i> Recent Transactions</h2>
+            <div class="expense-list">
+                <div class="expense-item shopping">
+                    <div class="expense-details">
+                        <div class="expense-description">Amazon Purchase</div>
+                        <div class="expense-category category-shopping">Online Shopping</div>
+                    </div>
+                    <div class="expense-amount">-$45.99</div>
+                </div>
+                
+                <div class="expense-item merchant">
+                    <div class="expense-details">
+                        <div class="expense-description">Starbucks Coffee</div>
+                        <div class="expense-category category-merchant">Merchant Payment</div>
+                    </div>
+                    <div class="expense-amount">-$5.75</div>
+                </div>
+                
+                <div class="expense-item other">
+                    <div class="expense-details">
+                        <div class="expense-description">Gym Membership</div>
+                        <div class="expense-category category-other">Other</div>
+                    </div>
+                    <div class="expense-amount">-$29.99</div>
+                </div>
+                
+                <div class="expense-item shopping">
+                    <div class="expense-details">
+                        <div class="expense-description">Etsy Handmade Item</div>
+                        <div class="expense-category category-shopping">Online Shopping</div>
+                    </div>
+                    <div class="expense-amount">-$32.50</div>
+                </div>
+                
+                <div class="expense-item merchant">
+                    <div class="expense-details">
+                        <div class="expense-description">Uber Ride</div>
+                        <div class="expense-category category-merchant">Merchant Payment</div>
+                    </div>
+                    <div class="expense-amount">-$18.20</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <button class="close-btn">&times;</button>
+        <h3><i class="fas fa-check-circle"></i> Payment Successful!</h3>
+        <p>You've successfully added a payment of <strong>$45.99</strong> for <strong>Amazon Purchase</strong>.</p>
+        <p>This payment was categorized as <strong>Online Shopping</strong>.</p>
+    </div>
+
+    <footer>
+        <p>Finity &copy; 2025 - Your Personal Expense Tracker</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const paymentForm = document.getElementById('paymentForm');
+            const notification = document.getElementById('notification');
+            const closeBtn = document.querySelector('.close-btn');
+            
+            // Show notification when form is submitted
+            paymentForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const amount = document.getElementById('amount').value;
+                const description = document.getElementById('description').value;
+                const category = document.getElementById('category').value;
+                
+                // Update notification content
+                const notificationContent = notification.querySelector('p');
+                notificationContent.innerHTML = `You've successfully added a payment of <strong>$${amount}</strong> for <strong>${description}</strong>.<br>
+                This payment was categorized as <strong>${getCategoryName(category)}</strong>.`;
+                
+                // Show notification
+                notification.classList.add('show');
+                
+                // Add new expense to the list
+                addExpenseToList(amount, description, category);
+                
+                // Reset form
+                paymentForm.reset();
+                
+                // Auto-hide notification after 5 seconds
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 5000);
+            });
+            
+            // Close notification when close button is clicked
+            closeBtn.addEventListener('click', function() {
+                notification.classList.remove('show');
+            });
+            
+            // Close notification when clicking outside of it
+            document.addEventListener('click', function(e) {
+                if (!notification.contains(e.target) && e.target !== notification) {
+                    notification.classList.remove('show');
+                }
+            });
+            
+            // Helper function to get category name
+            function getCategoryName(category) {
+                switch(category) {
+                    case 'shopping': return 'Online Shopping';
+                    case 'merchant': return 'Merchant Payment';
+                    case 'other': return 'Other';
+                    default: return 'Unknown';
+                }
+            }
+            
+            // Function to add expense to the list
+            function addExpenseToList(amount, description, category) {
+                const expenseList = document.querySelector('.expense-list');
+                
+                const expenseItem = document.createElement('div');
+                expenseItem.classList.add('expense-item');
+                
+                // Add category-specific class
+                if (category === 'shopping') expenseItem.classList.add('shopping');
+                else if (category === 'merchant') expenseItem.classList.add('merchant');
+                else expenseItem.classList.add('other');
+                
+                expenseItem.innerHTML = `
+                    <div class="expense-details">
+                        <div class="expense-description">${description}</div>
+                        <div class="expense-category category-${category}">${getCategoryName(category)}</div>
+                    </div>
+                    <div class="expense-amount">-$${amount}</div>
+                `;
+                
+                // Add to the beginning of the list
+                expenseList.insertBefore(expenseItem, expenseList.firstChild);
+            }
+        });
+    </script>
+</body>
+</html>
