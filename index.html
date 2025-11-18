@@ -24,6 +24,9 @@
                         'dark-bg': '#000000', // Pure Black Background
                         'dark-card': '#111111', // Near-Black Card/Element Color
                         'dark-border': '#333333',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     }
                 }
             }
@@ -76,8 +79,9 @@
         }
 
         /* Fix for light background elements */
-        .dark-mode .bg-gray-50 { 
-            background-color: #222222 !important; /* Slightly darker than dark-card for contrast on list items */
+        .dark-mode .bg-gray-50,
+        .dark-mode .bg-light { /* Auth page right panel background */
+            background-color: var(--tw-colors-dark-bg) !important; 
         }
 
         /* Fix for borders (like achievement list dividers, content separators) */
@@ -104,6 +108,10 @@
         }
         .dark-mode .chart-title { 
             color: #e2e8f0 !important; 
+        }
+        /* Auth page specific fixes */
+        .dark-mode .bg-dark {
+            background-color: var(--tw-colors-dark-card) !important; /* Footer BG becomes dark card */
         }
 
         /* General styles (Unchanged) */
@@ -135,36 +143,57 @@
         }
     </style>
 </head>
-<body class="p-4 md:p-8 transition-colors duration-300" id="body">
+<body class="p-0 md:p-0 transition-colors duration-300 min-h-screen flex flex-col" id="body">
     
-    <div class="max-w-6xl mx-auto relative z-10">
+    <div class="max-w-7xl mx-auto relative z-10 w-full flex-grow">
         <div id="notificationContainer" class="fixed top-4 right-4 space-y-3 z-50">
+        </div>
+
+        <div class="flex flex-col lg:flex-row min-h-screen w-full" id="authPage">
+            
+            <div class="lg:w-1/2 bg-primary text-white p-12 flex flex-col justify-center items-center relative overflow-hidden transition-colors duration-300">
+                <div class="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-blue-700 opacity-80 animate-pulse-slow"></div>
+                
+                <div class="relative z-10 text-center">
+                    <i class="fas fa-wallet text-8xl mb-6 transform hover:scale-105 transition-transform duration-300"></i>
+                    <h1 class="text-6xl font-extrabold mb-4">FINITY</h1>
+                    <p class="text-xl font-light max-w-md mx-auto">Your AI-Powered Financial Navigator. Track, Analyze, and Achieve your money goals effortlessly.</p>
+                </div>
+                
+                <div class="relative z-10 mt-10 p-4 border border-white/50 rounded-lg text-sm bg-white/10 backdrop-blur-sm">
+                    "Finity keeps me in control of my future."
+                </div>
             </div>
 
-        <div class="flex flex-col min-h-screen items-center justify-center" id="authPage">
-            <div class="text-center mb-10">
-                <i class="fas fa-wallet text-6xl text-primary mb-4"></i>
-                <h1 class="text-5xl font-extrabold text-dark transition-colors duration-300">FINITY</h1>
-                <p class="text-gray-700 mt-2 transition-colors duration-300">AI-Powered Finance Manager Prototype</p>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm transition-colors duration-300">
-                <h2 class="text-2xl font-bold text-center text-primary mb-6" id="authTitle">Login</h2>
-                <form id="authForm">
-                    <div class="mb-4">
-                        <label for="authUsername" class="block text-gray-700 font-medium mb-2">Username</label>
-                        <input type="text" id="authUsername" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition-colors duration-300" placeholder="Enter username" required>
+            <div class="lg:w-1/2 flex flex-col justify-center items-center p-8 md:p-12 bg-light transition-colors duration-300">
+                <div class="w-full max-w-md">
+                    <h2 class="text-4xl font-extrabold text-dark mb-2 transition-colors duration-300" id="authTitle">Login to Finity</h2>
+                    <p class="text-gray-500 mb-8 transition-colors duration-300">Enter your credentials to manage your finance.</p>
+                    
+                    <div class="bg-white rounded-xl shadow-2xl p-8 transition-colors duration-300 border border-gray-100">
+                        <form id="authForm">
+                            <div class="mb-4">
+                                <label for="authUsername" class="block text-gray-700 font-medium mb-2">Username</label>
+                                <input type="text" id="authUsername" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition-colors duration-300" placeholder="Enter username" required>
+                            </div>
+                            <div class="mb-6">
+                                <label for="authPassword" class="block text-gray-700 font-medium mb-2">Password</label>
+                                <input type="password" id="authPassword" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition-colors duration-300" placeholder="Enter password" required>
+                            </div>
+                            <button type="submit" class="w-full bg-primary text-white p-3 rounded-lg font-semibold hover:bg-secondary transition duration-200 shadow-md hover:shadow-lg">
+                                <span id="authBtnText">Login</span>
+                            </button>
+                        </form>
+                        <div class="text-center mt-4">
+                            <a href="#" id="toggleAuthMode" class="text-primary hover:underline text-sm font-medium">New User? Sign Up</a>
+                        </div>
                     </div>
-                    <div class="mb-6">
-                        <label for="authPassword" class="block text-gray-700 font-medium mb-2">Password</label>
-                        <input type="password" id="authPassword" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition-colors duration-300" placeholder="Enter password" required>
-                    </div>
-                    <button type="submit" class="w-full bg-primary text-white p-3 rounded-lg font-semibold hover:bg-secondary transition duration-200">
-                        <span id="authBtnText">Login</span>
-                    </button>
-                </form>
-                <div class="text-center mt-4">
-                    <a href="#" id="toggleAuthMode" class="text-primary hover:underline text-sm font-medium">New User? Sign Up</a>
+                </div>
+                
+                <div class="mt-8 text-center text-gray-400">
+                    <p class="text-xs">
+                        <i class="fas fa-copyright"></i> 2025 Finity Prototype
+                    </p>
                 </div>
             </div>
         </div>
@@ -210,14 +239,23 @@
                         <h2 class="text-3xl font-bold text-dark transition-colors duration-300">Welcome, <span id="welcomeUsername">User</span>!</h2>
                         
                         <div class="bg-white p-6 rounded-xl shadow-lg transition-colors duration-300 border-l-4 border-primary">
-                            <h3 class="text-xl font-bold text-primary mb-4 flex items-center space-x-2"><i class="fas fa-piggy-bank"></i><span>Save Money to Goal</span></h3>
-                            <form id="saveMoneyForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <h3 class="text-xl font-bold text-primary mb-4 flex items-center space-x-2"><i class="fas fa-piggy-bank"></i><span>Manage Savings</span></h3>
+                            
+                            <form id="saveMoneyForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                                 <input type="number" id="saveAmount" class="md:col-span-3 p-3 border border-gray-300 rounded-lg" placeholder="Amount to Save (₹)" min="0.01" step="0.01" required>
                                 <button type="submit" class="md:col-span-1 bg-primary text-white p-3 rounded-lg font-semibold hover:bg-secondary transition duration-200 flex items-center justify-center space-x-2">
                                     <i class="fas fa-arrow-up"></i><span>Log Savings</span>
                                 </button>
+                                <p class="md:col-span-4 text-sm text-gray-500 mt-0">This moves money from your **Balance** to your **Saved** total.</p>
                             </form>
-                            <p class="text-sm text-gray-500 mt-2">This moves money from your **Balance** to your **Saved** total.</p>
+                            
+                            <form id="withdrawMoneyForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4 border-t pt-4 border-gray-200">
+                                <input type="number" id="withdrawAmount" class="md:col-span-3 p-3 border border-gray-300 rounded-lg" placeholder="Amount to Withdraw (₹)" min="0.01" step="0.01" required>
+                                <button type="submit" class="md:col-span-1 bg-danger text-white p-3 rounded-lg font-semibold hover:bg-danger/80 transition duration-200 flex items-center justify-center space-x-2">
+                                    <i class="fas fa-arrow-down"></i><span>Withdraw</span>
+                                </button>
+                                <p class="md:col-span-4 text-sm text-gray-500 mt-0">This moves money from your **Saved** total back to your **Balance**.</p>
+                            </form>
                         </div>
 
                         <div class="bg-white p-6 rounded-xl shadow-lg transition-colors duration-300">
@@ -393,6 +431,33 @@
             </form>
         </div>
     </div>
+    
+    <footer class="w-full bg-dark p-6 text-light mt-auto transition-colors duration-300">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center md:items-start space-y-4 md:space-y-0">
+            <div class="text-center md:text-left">
+                <div class="text-xl font-bold text-primary mb-2 flex items-center justify-center md:justify-start">
+                    <i class="fas fa-wallet mr-2"></i> Finity
+                </div>
+                <p class="text-sm text-gray-400">AI-Powered Finance, Simplified.</p>
+            </div>
+            
+            <div class="space-y-2 text-center md:text-right">
+                <h4 class="font-semibold text-white">Contact & Support</h4>
+                <div class="text-sm text-gray-400 flex items-center justify-center md:justify-end">
+                    <i class="fas fa-phone mr-2 text-primary"></i> Phone: 
+                    <span class="ml-2 font-mono" contenteditable="true">
+                        [+1 234 567 8900]
+                    </span>
+                </div>
+                <div class="text-sm text-gray-400 flex items-center justify-center md:justify-end">
+                    <i class="fas fa-envelope mr-2 text-primary"></i> Email: 
+                    <span class="ml-2 font-mono" contenteditable="true">
+                        [support@finity.pro]
+                    </span>
+                </div>
+            </div>
+        </div>
+    </footer>
 
 
     <script>
@@ -512,7 +577,7 @@
         };
 
         const updateAuthForm = () => {
-            getElement('authTitle').textContent = isRegisterMode ? 'Sign Up' : 'Login';
+            getElement('authTitle').textContent = isRegisterMode ? 'Sign Up to Finity' : 'Login to Finity';
             getElement('authBtnText').textContent = isRegisterMode ? 'Register' : 'Login';
             getElement('toggleAuthMode').textContent = isRegisterMode ? 'Already have an account? Login' : 'New User? Sign Up';
             getElement('authForm').reset();
@@ -656,7 +721,7 @@
             getElement('incomeForm').reset();
         };
         
-        // New: Handle Save Money
+        // Handle Save Money (Move Balance -> Saved)
         const handleSaveMoney = (e) => {
             e.preventDefault();
             const amount = parseFloat(getElement('saveAmount').value);
@@ -667,7 +732,7 @@
             }
             
             if (currentUser.balance < amount) {
-                showNotification(`Insufficient balance for saving! Current Balance: ₹${currentUser.balance.toFixed(2)}`, 'danger');
+                showNotification(`Insufficient balance! Current Balance: ₹${currentUser.balance.toFixed(2)}`, 'danger');
                 return;
             }
 
@@ -680,13 +745,12 @@
             data.users[currentUser.username].balance = currentUser.balance;
             data.users[currentUser.username].totalSaved = currentUser.totalSaved;
             
-            // Log as a special type of 'expense' or transaction if needed, but for now, just update user properties
-            // We'll log a transaction to see it in the recent activity for completeness
+            // Log as a transaction for completeness
             const newSaving = {
                 username: currentUser.username,
-                description: 'Savings Goal',
-                amount: -amount, // Treat as an 'internal' expense
-                category: 'savings',
+                description: 'Savings Goal (Move out)',
+                amount: -amount, 
+                category: 'savings_out',
                 date: new Date().toISOString()
             };
             data.expenses.push(newSaving);
@@ -694,41 +758,99 @@
             
             showNotification(`Saved ₹${amount.toFixed(2)} to your goals!`, 'primary');
             updateDashboardUI();
-            updateAchievements(); // Update achievements since savings progress relies on it
+            updateAchievements(); 
             getElement('saveMoneyForm').reset();
         };
+
+        // NEW: Handle Withdraw Money (Move Saved -> Balance)
+        const handleWithdrawMoney = (e) => {
+            e.preventDefault();
+            const amount = parseFloat(getElement('withdrawAmount').value);
+
+            if (amount <= 0 || isNaN(amount)) {
+                showNotification('Please enter a valid amount to withdraw.', 'danger');
+                return;
+            }
+            
+            if (currentUser.totalSaved < amount) {
+                showNotification(`Insufficient saved money! Current Saved: ₹${currentUser.totalSaved.toFixed(2)}`, 'danger');
+                return;
+            }
+
+            const data = loadData();
+            
+            // Deduct from saved total and add to main balance
+            currentUser.totalSaved -= amount;
+            currentUser.balance += amount;
+
+            data.users[currentUser.username].balance = currentUser.balance;
+            data.users[currentUser.username].totalSaved = currentUser.totalSaved;
+            
+            // Log as a transaction for completeness (positive amount, special category)
+            const newWithdrawal = {
+                username: currentUser.username,
+                description: 'Savings Withdrawal (Move in)',
+                amount: amount, 
+                category: 'savings_in',
+                date: new Date().toISOString()
+            };
+            data.expenses.push(newWithdrawal);
+            saveData(data);
+            
+            showNotification(`Withdrew ₹${amount.toFixed(2)} from savings to balance.`, 'success');
+            updateDashboardUI();
+            getElement('withdrawMoneyForm').reset();
+        };
+
 
         const renderExpenses = () => {
             const listEl = getElement('recentExpenseList');
             const data = loadData();
             const userActivity = data.expenses
-                .filter(exp => exp.username === currentUser.username && exp.category !== 'income') // Only show expenses
+                // Filter to only include actual expenses, incomes, or savings transactions
+                .filter(exp => exp.username === currentUser.username) 
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
                 .slice(0, 5);
 
             listEl.innerHTML = '';
 
             if (userActivity.length === 0) {
-                listEl.innerHTML = '<p class="text-gray-500 text-center py-4">No recent expenses recorded.</p>';
+                listEl.innerHTML = '<p class="text-gray-500 text-center py-4">No recent activity recorded.</p>';
                 return;
             }
 
             userActivity.forEach(exp => {
-                const categoryColor = { 'shopping': 'border-warning', 'food': 'border-success', 'bills': 'border-danger', 'other': 'border-gray-500', 'savings': 'border-primary' }[exp.category];
-                const item = document.createElement('div');
-                // Use a slightly different background/icon for savings
-                const isSaving = exp.category === 'savings';
-                const textColor = isSaving ? 'text-primary' : 'text-danger';
-                const prefixIcon = isSaving ? '<i class="fas fa-arrow-right-to-bracket text-lg"></i>' : '<i class="fas fa-credit-card text-lg"></i>';
-                const descriptionText = isSaving ? 'Log Savings' : exp.description || exp.category.charAt(0).toUpperCase() + exp.category.slice(1);
+                const categoryColor = { 
+                    'shopping': 'border-warning', 
+                    'food': 'border-success', 
+                    'bills': 'border-danger', 
+                    'other': 'border-gray-500', 
+                    'savings_out': 'border-primary', // Savings logged
+                    'savings_in': 'border-success', // Withdrawal
+                    'income': 'border-success' // Income
+                }[exp.category];
                 
-                // Recalculate background color based on current dark mode state
+                let textColor = 'text-danger';
+                let prefixIcon = '<i class="fas fa-credit-card text-lg"></i>';
+                let descriptionText = exp.description || exp.category.charAt(0).toUpperCase() + exp.category.slice(1);
+                let displayAmount = Math.abs(exp.amount).toFixed(2);
+                let amountSign = '-';
+
+                if (exp.category === 'income' || exp.category === 'savings_in') {
+                    textColor = 'text-success';
+                    amountSign = '+';
+                    prefixIcon = exp.category === 'income' ? '<i class="fas fa-coins text-lg"></i>' : '<i class="fas fa-undo text-lg"></i>';
+                    descriptionText = exp.category === 'savings_in' ? 'Withdraw Savings' : descriptionText;
+                } else if (exp.category === 'savings_out') {
+                     textColor = 'text-primary';
+                     prefixIcon = '<i class="fas fa-arrow-right-to-bracket text-lg"></i>';
+                     descriptionText = 'Log Savings';
+                }
+                
                 const isDarkMode = document.body.classList.contains('dark-mode');
-                const bgColor = isDarkMode ? 'bg-[#222222]' : 'bg-gray-50'; // Use a hardcoded dark color for list items
+                const bgColor = isDarkMode ? 'bg-[#222222]' : 'bg-gray-50'; 
 
                 item.className = `expense-item flex justify-between items-center p-3 rounded-lg ${bgColor} border-l-4 ${categoryColor} shadow-sm transition-colors duration-300`;
-                
-                const displayAmount = Math.abs(exp.amount).toFixed(2);
                 
                 item.innerHTML = `
                     <div class="flex items-center space-x-2">
@@ -738,7 +860,7 @@
                             <p class="text-xs text-gray-500">${new Date(exp.date).toLocaleDateString()}</p>
                         </div>
                     </div>
-                    <span class="text-lg font-bold ${textColor}">- ₹${displayAmount}</span>
+                    <span class="text-lg font-bold ${textColor}">${amountSign} ₹${displayAmount}</span>
                 `;
                 listEl.appendChild(item);
             });
@@ -748,8 +870,8 @@
 
         const getExpenseSummary = () => {
             const data = loadData();
-            // Filter to only include actual *expenses* (negative amounts and not 'income' or 'savings' category)
-            const userExpenses = data.expenses.filter(exp => exp.username === currentUser.username && exp.amount < 0 && exp.category !== 'income' && exp.category !== 'savings');
+            // Filter to only include actual *expenses* (negative amounts and not 'income', 'savings_out', or 'savings_in' category)
+            const userExpenses = data.expenses.filter(exp => exp.username === currentUser.username && exp.amount < 0 && exp.category !== 'income' && exp.category !== 'savings_out');
             const summary = { total: 0, shopping: 0, food: 0, bills: 0, other: 0 };
             
             userExpenses.forEach(exp => {
@@ -821,7 +943,7 @@
 
         const updateAchievements = () => {
             const data = loadData();
-            const userExpenses = data.expenses.filter(exp => exp.username === currentUser.username && exp.category !== 'income' && exp.category !== 'savings');
+            const userExpenses = data.expenses.filter(exp => exp.username === currentUser.username && exp.category !== 'income' && exp.category !== 'savings_out' && exp.category !== 'savings_in');
             const totalSpent = getExpenseSummary().total;
             
             // 1. Savings Starter (Goal: Save 5% of initialBalance, if initialBalance > 0)
@@ -1041,6 +1163,10 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             
+            // Change the body class for the new layout structure
+            document.body.classList.remove('p-4', 'md:p-8');
+            document.body.classList.add('p-0', 'md:p-0', 'min-h-screen', 'flex', 'flex-col');
+            
             if (checkLogin()) {
                 updateDashboardUI();
                 updateInsightsUI();
@@ -1063,8 +1189,11 @@
             // Event Listeners for Dashboard
             getElement('expenseForm').addEventListener('submit', addExpense);
             
-            // New: Save Money Listener
+            // New: Save Money Listener (Move Balance -> Saved)
             getElement('saveMoneyForm').addEventListener('submit', handleSaveMoney);
+            
+            // NEW: Withdraw Money Listener (Move Saved -> Balance)
+            getElement('withdrawMoneyForm').addEventListener('submit', handleWithdrawMoney);
             
             // Income Modal Listeners
             getElement('addIncomeBtn').addEventListener('click', () => {
@@ -1142,4 +1271,4 @@
         });
     </script>
 </body>
-</htmt>
+</html>
