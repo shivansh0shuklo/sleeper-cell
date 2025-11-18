@@ -28,68 +28,114 @@
             }
         }
     </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #f8f9fa; /* Default light background */
-            transition: background-color 0.3s ease, color 0.3s ease;
-            overflow-y: scroll;
-        }
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    
+    body { 
+        font-family: 'Inter', sans-serif; 
+        background-color: #f8f9fa; /* Default light background */
+        transition: background-color 0.3s ease, color 0.3s ease;
+        overflow-y: scroll;
+    }
 
-        /* ---------------------------------
-            Improved Full Dark Mode Styles
-            --------------------------------- */
-        .dark-mode {
-            background-color: var(--tw-colors-dark-bg) !important;
-            color: #e2e8f0;
-        }
-        
-        /* Elements that are white in light mode become dark-card in dark mode */
-        .dark-mode .bg-white { background-color: var(--tw-colors-dark-card) !important; }
-        .dark-mode input, .dark-mode select, .dark-mode textarea { background-color: #2c2c2c !important; color: #e2e8f0; border-color: var(--tw-colors-dark-border) !important; }
-        .dark-mode .text-gray-700 { color: #a0aec0 !important; }
-        .dark-mode .text-dark { color: #e2e8f0 !important; }
-        .dark-mode .border-gray-200 { border-color: var(--tw-colors-dark-border) !important; }
-        .dark-mode .message.bot-message { background-color: var(--tw-colors-dark-card) !important; color: #e2e8f0 !important; }
-        .dark-mode .expense-item { background-color: #2c2c2c !important; }
-        .dark-mode .nav-btn.text-gray-700 { color: #a0aec0 !important; }
-        .dark-mode .nav-btn:hover { background-color: #2c2c2c !important; }
-        .dark-mode .chart-title, .dark-mode .text-dark { color: #e2e8f0 !important; }
-        .dark-mode .text-gray-500 { color: #9ca3af !important; }
-        .dark-mode .bg-gray-50 { background-color: #2c2c2c !important; }
-        .dark-mode .border-b, .dark-mode .border-l { border-color: var(--tw-colors-dark-border) !important; }
-        /* Placeholder for dark mode if background image was present, now overridden by .dark-mode background-color */
+    /* ---------------------------------
+        Improved Full Dark Mode Styles
+        --------------------------------- */
+    .dark-mode {
+        background-color: var(--tw-colors-dark-bg) !important;
+        color: #e2e8f0;
+    }
+    
+    /* Elements that are white in light mode become dark-card in dark mode */
+    .dark-mode .bg-white { 
+        background-color: var(--tw-colors-dark-card) !important; 
+    }
+    
+    /* FIX: Input field background now uses dark-card or a similar dark shade from config, and ensures primary text is light. */
+    .dark-mode input, 
+    .dark-mode select, 
+    .dark-mode textarea { 
+        /* Use dark-card or similar for input backgrounds */
+        background-color: var(--tw-colors-dark-card) !important; 
+        color: #e2e8f0 !important; /* Ensure text inside is light */
+        border-color: var(--tw-colors-dark-border) !important; 
+    }
+    
+    /* Ensure elements that use the 'dark' utility color (like main headings) are light in dark mode */
+    .dark-mode .text-dark { 
+        color: #e2e8f0 !important; 
+    }
+    
+    /* Fix for lighter text colors used in light mode */
+    .dark-mode .text-gray-700 { 
+        color: #a0aec0 !important; /* Lighter grey for secondary text */
+    }
+    .dark-mode .text-gray-500 { 
+        color: #9ca3af !important; 
+    }
+    .dark-mode .text-gray-600 { /* Added for achievement statuses */
+        color: #a0aec0 !important;
+    }
 
-        /* General styles (Unchanged) */
-        .loading {
-            display: inline-block;
-            width: 1rem;
-            height: 1rem;
-            border: 3px solid rgba(255, 255, 255, .3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        .modal { background: rgba(0, 0, 0, 0.5); z-index: 50; }
+    /* Fix for light background elements */
+    .dark-mode .bg-gray-50 { 
+        background-color: #2c2c2c !important; /* Slightly darker than dark-card for contrast */
+    }
 
-        /* Notification Styling (Unchanged) */
-        .notification-alert {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            min-width: 300px;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-            z-index: 50;
-        }
-    </style>
+    /* Fix for borders (like achievement list dividers, content separators) */
+    .dark-mode .border-gray-200, 
+    .dark-mode .border-b, 
+    .dark-mode .border-l,
+    .dark-mode .border-gray-100 { 
+        border-color: var(--tw-colors-dark-border) !important; 
+    }
+
+    /* Specific elements */
+    .dark-mode .message.bot-message { 
+        background-color: var(--tw-colors-dark-card) !important; 
+        color: #e2e8f0 !important; 
+    }
+    .dark-mode .expense-item { 
+        background-color: #2c2c2c !important; 
+    }
+    .dark-mode .nav-btn.text-gray-700 { 
+        color: #a0aec0 !important; 
+    }
+    .dark-mode .nav-btn:hover { 
+        background-color: #2c2c2c !important; 
+    }
+    .dark-mode .chart-title, .dark-mode .text-dark { 
+        color: #e2e8f0 !important; 
+    }
+
+    /* General styles (Unchanged) */
+    .loading {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border: 3px solid rgba(255, 255, 255, .3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    .modal { background: rgba(0, 0, 0, 0.5); z-index: 50; }
+
+    /* Notification Styling (Unchanged) */
+    .notification-alert {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        min-width: 300px;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        z-index: 50;
+    }
+</style>
 </head>
 <body class="p-4 md:p-8 transition-colors duration-300" id="body">
     
@@ -1092,3 +1138,4 @@
     </script>
 </body>
 </htmt>
+
