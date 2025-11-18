@@ -22,6 +22,7 @@
                         'gray': '#6c757d',
                         'dark-bg': '#121212', // New dark background color
                         'dark-card': '#1e1e1e', // New dark card color
+                        'dark-border': '#333333', // New dark border color
                     }
                 }
             }
@@ -32,46 +33,36 @@
         
         body { 
             font-family: 'Inter', sans-serif; 
-            background-image: url('https://i.imgur.com/your-image-url.jpg'); /* REPLACE with the actual image URL */
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            position: relative;
+            background-color: #f8f9fa; /* Default light background */
             transition: background-color 0.3s ease, color 0.3s ease;
             overflow-y: scroll;
         }
 
         /* ---------------------------------
-           Improved Full Dark Mode Styles
-           --------------------------------- */
-
-        /* Full dark screen body background and overlay */
+            Improved Full Dark Mode Styles
+            --------------------------------- */
         .dark-mode {
-            background-color: var(--tw-colors-dark-bg); /* Use the Tailwind custom color variable */
+            background-color: var(--tw-colors-dark-bg) !important;
             color: #e2e8f0;
         }
         
-        /* Dark mode overlay to completely hide background image and ensure pure dark background */
-        .dark-mode body::before {
-            background-color: var(--tw-colors-dark-bg) !important; /* Pure black/dark overlay */
-            backdrop-filter: none;
-        }
-
         /* Elements that are white in light mode become dark-card in dark mode */
         .dark-mode .bg-white { background-color: var(--tw-colors-dark-card) !important; }
-        .dark-mode input, .dark-mode select { background-color: #2c2c2c !important; color: #e2e8f0; border-color: #4a5568; }
-        .dark-mode .text-gray-700 { color: #a0aec0; }
-        .dark-mode .border-gray-200 { border-color: #4a5568; }
-        .dark-mode .message.bot-message { background-color: #2c2c2c; color: #e2e8f0; }
+        .dark-mode input, .dark-mode select, .dark-mode textarea { background-color: #2c2c2c !important; color: #e2e8f0; border-color: var(--tw-colors-dark-border) !important; }
+        .dark-mode .text-gray-700 { color: #a0aec0 !important; }
+        .dark-mode .text-dark { color: #e2e8f0 !important; }
+        .dark-mode .border-gray-200 { border-color: var(--tw-colors-dark-border) !important; }
+        .dark-mode .message.bot-message { background-color: var(--tw-colors-dark-card) !important; color: #e2e8f0 !important; }
         .dark-mode .expense-item { background-color: #2c2c2c !important; }
         .dark-mode .nav-btn.text-gray-700 { color: #a0aec0 !important; }
         .dark-mode .nav-btn:hover { background-color: #2c2c2c !important; }
         .dark-mode .chart-title, .dark-mode .text-dark { color: #e2e8f0 !important; }
         .dark-mode .text-gray-500 { color: #9ca3af !important; }
         .dark-mode .bg-gray-50 { background-color: #2c2c2c !important; }
-        .dark-mode .border-b, .dark-mode .border-l { border-color: #4a5568 !important; }
+        .dark-mode .border-b, .dark-mode .border-l { border-color: var(--tw-colors-dark-border) !important; }
+        /* Placeholder for dark mode if background image was present, now overridden by .dark-mode background-color */
 
-        /* General styles */
+        /* General styles (Unchanged) */
         .loading {
             display: inline-block;
             width: 1rem;
@@ -86,7 +77,7 @@
         }
         .modal { background: rgba(0, 0, 0, 0.5); z-index: 50; }
 
-        /* Notification Styling */
+        /* Notification Styling (Unchanged) */
         .notification-alert {
             position: fixed;
             top: 1rem;
@@ -144,6 +135,9 @@
                     <div class="text-sm font-semibold p-2 bg-success text-white rounded-full px-4" id="currentBalanceDisplay">
                         Balance: ₹0.00
                     </div>
+                    <div class="text-sm font-semibold p-2 bg-primary text-white rounded-full px-4" id="totalSavedDisplay">
+                        Saved: ₹0.00
+                    </div>
                     <button id="addIncomeBtn" class="bg-primary text-white p-2 rounded-full hover:bg-secondary transition duration-200">
                         <i class="fas fa-plus text-xl"></i>
                     </button>
@@ -171,6 +165,17 @@
                     <div id="dashContent" class="content-panel space-y-6">
                         <h2 class="text-3xl font-bold text-dark transition-colors duration-300">Welcome, <span id="welcomeUsername">User</span>!</h2>
                         
+                        <div class="bg-white p-6 rounded-xl shadow-lg transition-colors duration-300 border-l-4 border-primary">
+                            <h3 class="text-xl font-bold text-primary mb-4 flex items-center space-x-2"><i class="fas fa-piggy-bank"></i><span>Save Money to Goal</span></h3>
+                            <form id="saveMoneyForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <input type="number" id="saveAmount" class="md:col-span-3 p-3 border border-gray-300 rounded-lg" placeholder="Amount to Save (₹)" min="0.01" step="0.01" required>
+                                <button type="submit" class="md:col-span-1 bg-primary text-white p-3 rounded-lg font-semibold hover:bg-secondary transition duration-200 flex items-center justify-center space-x-2">
+                                    <i class="fas fa-arrow-up"></i><span>Log Savings</span>
+                                </button>
+                            </form>
+                            <p class="text-sm text-gray-500 mt-2">This moves money from your **Balance** to your **Saved** total.</p>
+                        </div>
+
                         <div class="bg-white p-6 rounded-xl shadow-lg transition-colors duration-300">
                             <h3 class="text-xl font-bold text-primary mb-4 flex items-center space-x-2"><i class="fas fa-plus-circle"></i><span>Add New Expense</span></h3>
                             <form id="expenseForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -248,7 +253,7 @@
                                 <i class="fas fa-lock text-3xl text-indigo-500"></i>
                                 <div class="flex-1">
                                     <p class="font-semibold">No Debt Streak</p>
-                                    <p class="text-sm text-gray-600" id="debtStatus">Streak: 0 Days</p>
+                                    <p class="text-sm text-gray-600" id="debtStatus">Status: Positive Balance</p>
                                 </div>
                                 <i class="fas fa-check-circle text-2xl text-gray-400" id="debtIcon"></i>
                             </div>
@@ -264,16 +269,20 @@
                         </div>
 
                         <div class="bg-white p-6 rounded-xl shadow-lg">
+                            <h3 class="text-xl font-bold text-primary mb-4">Set Custom Milestones</h3>
+                            <form id="addMilestoneForm" class="space-y-3">
+                                <input type="text" id="milestoneName" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="e.g., Buy a New Laptop">
+                                <div class="flex space-x-2">
+                                    <input type="number" id="milestoneTarget" class="flex-1 p-3 border border-gray-300 rounded-lg" placeholder="Target Amount (₹)" min="1" step="0.01" required>
+                                    <button type="submit" class="bg-success text-white p-3 rounded-lg font-semibold hover:bg-success/80 transition duration-200">Add Goal</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="bg-white p-6 rounded-xl shadow-lg">
                             <h3 class="text-xl font-bold text-primary mb-4">Upcoming Milestones</h3>
-                            <ul class="space-y-3">
-                                <li class="p-3 border border-gray-100 rounded-lg bg-gray-50 flex justify-between items-center">
-                                    <span>First ₹10,000 Saved</span>
-                                    <i class="fas fa-arrow-right text-gray-400"></i>
-                                </li>
-                                <li class="p-3 border border-gray-100 rounded-lg bg-gray-50 flex justify-between items-center">
-                                    <span>Balanced Budget Master (4 categories tracked)</span>
-                                    <i class="fas fa-arrow-right text-gray-400"></i>
-                                </li>
+                            <ul class="space-y-3" id="milestonesList">
+                                <p class="text-gray-500 text-center py-4">No custom milestones set.</p>
                             </ul>
                         </div>
                     </div>
@@ -345,15 +354,20 @@
     <script>
         const STORAGE_KEY = 'finity_prototype_data';
         const AI_KEY_STORAGE_KEY = 'finity_gemini_api_key';
+        const MILESTONE_STORAGE_KEY = 'finity_milestones'; // New key for milestones
         const GEMINI_MODEL = 'gemini-2.5-flash-preview-09-2025';
         let currentUser = null;
         let aiApiKey = 'AIzaSyAwsQqMPAkp3VFjVKAdrXHOLkUsYcwgNBI'; // DEFAULT KEY SET HERE
         let expenseChartInstance = null;
-        let initialBalance = 0; // The original balance before any spending, used for 10% notification logic.
+        let initialBalance = 0;
 
         // --- 1. LOCAL DATA MANAGEMENT ---
         const loadData = () => JSON.parse(localStorage.getItem(STORAGE_KEY)) || { users: {}, expenses: [] };
         const saveData = (data) => localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        
+        // New Milestone Data Management
+        const loadMilestones = () => JSON.parse(localStorage.getItem(MILESTONE_STORAGE_KEY)) || {};
+        const saveMilestones = (milestones) => localStorage.setItem(MILESTONE_STORAGE_KEY, JSON.stringify(milestones));
 
         // --- 2. UI UTILITIES ---
         const getElement = (id) => document.getElementById(id);
@@ -432,8 +446,8 @@
                     localStorage.setItem(AI_KEY_STORAGE_KEY, aiApiKey);
                 }
                 
-                // Balance starts at 0 as requested
-                data.users[username] = { password, balance: 0, initialBalance: 0, joined: new Date().toISOString() };
+                // Added totalSaved for the new feature
+                data.users[username] = { password, balance: 0, initialBalance: 0, totalSaved: 0, joined: new Date().toISOString() };
                 saveData(data);
                 showNotification('Registration successful! Please log in.', 'success');
                 isRegisterMode = false;
@@ -467,12 +481,17 @@
                 const user = data.users[username];
                 if (user) {
                     currentUser = { username, ...user };
-                    // Initialize initialBalance if missing (for legacy or first login after code change)
-                    if (currentUser.initialBalance === undefined) {
-                        currentUser.initialBalance = currentUser.balance; 
-                        data.users[username].initialBalance = currentUser.initialBalance;
+                    // Ensure new properties exist for current user
+                    if (currentUser.initialBalance === undefined) currentUser.initialBalance = currentUser.balance;
+                    if (currentUser.totalSaved === undefined) currentUser.totalSaved = 0;
+                    
+                    // Update the local data structure in storage if a property was missing
+                    const mustSave = currentUser.initialBalance === undefined || currentUser.totalSaved === undefined;
+                    if (mustSave) {
+                        data.users[username] = currentUser;
                         saveData(data);
                     }
+
                     initialBalance = currentUser.initialBalance;
                     switchView('dashboardPage');
                     return true;
@@ -482,19 +501,21 @@
             return false;
         };
         
-        // --- 4. DASHBOARD & EXPENSE/INCOME LOGIC ---
+        // --- 4. DASHBOARD & EXPENSE/INCOME/SAVING LOGIC ---
         
         const updateDashboardUI = () => {
             if (!currentUser) return;
             getElement('welcomeUsername').textContent = currentUser.username;
             getElement('currentBalanceDisplay').textContent = `Balance: ₹${currentUser.balance.toFixed(2)}`;
+            // Update the new Saved display
+            getElement('totalSavedDisplay').textContent = `Saved: ₹${currentUser.totalSaved.toFixed(2)}`;
             renderExpenses();
             updateAchievements();
             updateProfileSection();
         };
 
         const checkSpendingNotification = (oldBalance, newBalance) => {
-            if (initialBalance === 0) return; // Cannot calculate percentage spent if initial is 0
+            if (initialBalance === 0) return;
             
             const oldSpent = initialBalance - oldBalance;
             const newSpent = initialBalance - newBalance;
@@ -504,7 +525,6 @@
                 const spendingMark = initialBalance * (i / 10);
                 
                 // Check if the old spent amount was below the mark and the new spent amount is above or at the mark
-                // Also check if the newSpent is positive (i.e., we are spending from the initial balance, not saving)
                 if (newSpent > 0 && oldSpent < spendingMark && newSpent >= spendingMark) {
                     const percent = i * 10;
                     showNotification(`Heads up! You have now spent ${percent}% (₹${newSpent.toFixed(2)}) of your initial balance (₹${initialBalance.toFixed(2)}).`, 'warning');
@@ -520,7 +540,7 @@
             const category = getElement('expenseCategory').value;
 
             if (amount <= 0 || isNaN(amount)) {
-                showNotification('Please enter a valid amount.', 'danger');
+                showNotification('Please enter a valid expense amount.', 'danger');
                 return;
             }
             
@@ -563,8 +583,18 @@
             }
 
             const data = loadData();
-            const oldBalance = currentUser.balance;
+            
+            currentUser.balance += amount;
+            
+            // Update initialBalance only if it's the very first income
+            if (initialBalance === 0) {
+                initialBalance = currentUser.balance;
+                currentUser.initialBalance = initialBalance;
+            }
 
+            data.users[currentUser.username].balance = currentUser.balance;
+            data.users[currentUser.username].initialBalance = currentUser.initialBalance;
+            
             const newIncome = {
                 username: currentUser.username,
                 description: 'Income',
@@ -572,19 +602,7 @@
                 category: 'income',
                 date: new Date().toISOString()
             };
-
-            // Update user balance, initial balance, and save
-            currentUser.balance += amount;
-            // Only update initialBalance if it's the first income or if the existing balance is 0.
-            // A more complex system would handle this differently, but for a prototype, this works.
-            if (initialBalance === 0 || initialBalance === oldBalance) {
-                initialBalance = currentUser.balance;
-                currentUser.initialBalance = initialBalance;
-            }
-
-            data.users[currentUser.username].balance = currentUser.balance;
-            data.users[currentUser.username].initialBalance = currentUser.initialBalance;
-            data.expenses.push(newIncome); // Storing income in expenses array for simplicity
+            data.expenses.push(newIncome);
             saveData(data);
             
             showNotification(`Income added: + ₹${amount.toFixed(2)}!`, 'success');
@@ -592,6 +610,48 @@
             updateInsightsUI();
             getElement('incomeModal').classList.add('hidden');
             getElement('incomeForm').reset();
+        };
+        
+        // New: Handle Save Money
+        const handleSaveMoney = (e) => {
+            e.preventDefault();
+            const amount = parseFloat(getElement('saveAmount').value);
+
+            if (amount <= 0 || isNaN(amount)) {
+                showNotification('Please enter a valid amount to save.', 'danger');
+                return;
+            }
+            
+            if (currentUser.balance < amount) {
+                showNotification(`Insufficient balance for saving! Current Balance: ₹${currentUser.balance.toFixed(2)}`, 'danger');
+                return;
+            }
+
+            const data = loadData();
+            
+            // Deduct from balance and add to saved total
+            currentUser.balance -= amount;
+            currentUser.totalSaved += amount;
+
+            data.users[currentUser.username].balance = currentUser.balance;
+            data.users[currentUser.username].totalSaved = currentUser.totalSaved;
+            
+            // Log as a special type of 'expense' or transaction if needed, but for now, just update user properties
+            // We'll log a transaction to see it in the recent activity for completeness
+            const newSaving = {
+                username: currentUser.username,
+                description: 'Savings Goal',
+                amount: -amount, // Treat as an 'internal' expense
+                category: 'savings',
+                date: new Date().toISOString()
+            };
+            data.expenses.push(newSaving);
+            saveData(data);
+            
+            showNotification(`Saved ₹${amount.toFixed(2)} to your goals!`, 'primary');
+            updateDashboardUI();
+            updateAchievements(); // Update achievements since savings progress relies on it
+            getElement('saveMoneyForm').reset();
         };
 
         const renderExpenses = () => {
@@ -610,19 +670,27 @@
             }
 
             userActivity.forEach(exp => {
-                const categoryColor = { 'shopping': 'border-warning', 'food': 'border-success', 'bills': 'border-danger', 'other': 'border-gray-500' }[exp.category];
+                const categoryColor = { 'shopping': 'border-warning', 'food': 'border-success', 'bills': 'border-danger', 'other': 'border-gray-500', 'savings': 'border-primary' }[exp.category];
                 const item = document.createElement('div');
+                // Use a slightly different background/icon for savings
+                const isSaving = exp.category === 'savings';
+                const textColor = isSaving ? 'text-primary' : 'text-danger';
+                const prefixIcon = isSaving ? '<i class="fas fa-arrow-right-to-bracket text-lg"></i>' : '<i class="fas fa-credit-card text-lg"></i>';
+                const descriptionText = isSaving ? 'Log Savings' : exp.description || exp.category.charAt(0).toUpperCase() + exp.category.slice(1);
+                
                 item.className = `expense-item flex justify-between items-center p-3 rounded-lg bg-gray-50 border-l-4 ${categoryColor} shadow-sm transition-colors duration-300`;
                 
-                // The amount is stored as a negative number for expenses, so we use Math.abs() for display
                 const displayAmount = Math.abs(exp.amount).toFixed(2);
                 
                 item.innerHTML = `
-                    <div>
-                        <strong class="text-dark">${exp.description || exp.category.charAt(0).toUpperCase() + exp.category.slice(1)}</strong>
-                        <p class="text-xs text-gray-500">${new Date(exp.date).toLocaleDateString()}</p>
+                    <div class="flex items-center space-x-2">
+                        ${prefixIcon}
+                        <div>
+                            <strong class="text-dark">${descriptionText}</strong>
+                            <p class="text-xs text-gray-500">${new Date(exp.date).toLocaleDateString()}</p>
+                        </div>
                     </div>
-                    <span class="text-lg font-bold text-danger">- ₹${displayAmount}</span>
+                    <span class="text-lg font-bold ${textColor}">- ₹${displayAmount}</span>
                 `;
                 listEl.appendChild(item);
             });
@@ -632,8 +700,8 @@
 
         const getExpenseSummary = () => {
             const data = loadData();
-            // Filter to only include actual *expenses* (negative amounts and not 'income' category)
-            const userExpenses = data.expenses.filter(exp => exp.username === currentUser.username && exp.amount < 0 && exp.category !== 'income');
+            // Filter to only include actual *expenses* (negative amounts and not 'income' or 'savings' category)
+            const userExpenses = data.expenses.filter(exp => exp.username === currentUser.username && exp.amount < 0 && exp.category !== 'income' && exp.category !== 'savings');
             const summary = { total: 0, shopping: 0, food: 0, bills: 0, other: 0 };
             
             userExpenses.forEach(exp => {
@@ -642,8 +710,7 @@
                 if (summary[exp.category] !== undefined) {
                     summary[exp.category] += amount;
                 } else {
-                     // Handle expenses with an 'other' category if the original data had them, or fall back to other
-                     summary.other += amount;
+                    summary.other += amount;
                 }
             });
             return summary;
@@ -675,6 +742,8 @@
 
             const ctx = getElement('expenseChart').getContext('2d');
             if (expenseChartInstance) expenseChartInstance.destroy();
+            
+            const chartFontColor = document.body.classList.contains('dark-mode') ? '#e2e8f0' : '#333';
 
             expenseChartInstance = new Chart(ctx, {
                 type: 'doughnut',
@@ -690,7 +759,10 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'top', labels: { color: document.body.classList.contains('dark-mode') ? '#e2e8f0' : '#333' } },
+                        legend: { 
+                            position: 'top', 
+                            labels: { color: chartFontColor } 
+                        },
                         title: { display: false }
                     }
                 }
@@ -701,29 +773,27 @@
 
         const updateAchievements = () => {
             const data = loadData();
-            const userExpenses = data.expenses.filter(exp => exp.username === currentUser.username && exp.category !== 'income');
+            const userExpenses = data.expenses.filter(exp => exp.username === currentUser.username && exp.category !== 'income' && exp.category !== 'savings');
             const totalSpent = getExpenseSummary().total;
             
             // 1. Savings Starter (Goal: Save 5% of initialBalance, if initialBalance > 0)
             const targetSavings = initialBalance * 0.05; // 5% of the initial income
-            const currentSavings = initialBalance - totalSpent;
+            const currentSavings = currentUser.totalSaved; // Use new totalSaved property
 
-            // Only track progress if there was an initial balance set
             let progress = 0;
-            if (initialBalance > 0) {
+            if (targetSavings > 0) {
                 progress = Math.min(100, Math.max(0, (currentSavings / targetSavings) * 100));
             }
 
             getElement('savingsProgress').style.width = `${progress.toFixed(0)}%`;
-            getElement('savingsStatus').textContent = `${progress.toFixed(0)}% Saved`;
+            getElement('savingsStatus').textContent = `₹${currentSavings.toFixed(2)} / ₹${targetSavings.toFixed(2)} (${progress.toFixed(0)}%)`;
             if (progress >= 100) {
-                 getElement('savingsProgress').classList.remove('bg-green-600');
-                 getElement('savingsProgress').classList.add('bg-blue-600');
+                getElement('savingsProgress').classList.remove('bg-green-600');
+                getElement('savingsProgress').classList.add('bg-blue-600');
             } else {
-                 getElement('savingsProgress').classList.add('bg-green-600');
-                 getElement('savingsProgress').classList.remove('bg-blue-600');
+                getElement('savingsProgress').classList.add('bg-green-600');
+                getElement('savingsProgress').classList.remove('bg-blue-600');
             }
-
 
             // 2. Expense Tracker Pro
             const expenseCount = userExpenses.length;
@@ -746,7 +816,96 @@
                 getElement('debtIcon').classList.remove('text-gray-400', 'text-green-500');
                 getElement('debtIcon').classList.add('text-danger');
             }
+            
+            renderMilestones();
         };
+        
+        // New: Milestone Logic
+        const addMilestone = (e) => {
+            e.preventDefault();
+            const name = getElement('milestoneName').value.trim();
+            const target = parseFloat(getElement('milestoneTarget').value);
+            
+            if (!name || target <= 0 || isNaN(target)) {
+                showNotification('Please enter a valid name and target amount.', 'danger');
+                return;
+            }
+            
+            const milestones = loadMilestones();
+            if (!milestones[currentUser.username]) milestones[currentUser.username] = [];
+            
+            const newMilestone = {
+                id: Date.now(), // Unique ID
+                name,
+                target,
+                achieved: false
+            };
+            
+            milestones[currentUser.username].push(newMilestone);
+            saveMilestones(milestones);
+            showNotification(`Milestone "${name}" added!`, 'success');
+            getElement('addMilestoneForm').reset();
+            renderMilestones();
+        };
+
+        const renderMilestones = () => {
+            const listEl = getElement('milestonesList');
+            const allMilestones = loadMilestones();
+            const userMilestones = allMilestones[currentUser.username] || [];
+
+            listEl.innerHTML = '';
+
+            if (userMilestones.length === 0) {
+                listEl.innerHTML = '<p class="text-gray-500 text-center py-4">No custom milestones set.</p>';
+                return;
+            }
+            
+            const currentSaved = currentUser.totalSaved;
+            const isDarkMode = document.body.classList.contains('dark-mode');
+
+            userMilestones.forEach(milestone => {
+                const progress = Math.min(100, Math.max(0, (currentSaved / milestone.target) * 100));
+                const statusColor = milestone.achieved ? 'text-blue-600' : 'text-gray-400';
+                const statusIcon = milestone.achieved ? 'fa-check-double' : 'fa-arrow-right';
+                const bgColor = isDarkMode ? 'bg-dark-card' : 'bg-gray-50';
+
+                const item = document.createElement('li');
+                item.className = `p-3 border border-gray-100 rounded-lg ${bgColor} flex justify-between items-center transition-colors duration-300`;
+                item.innerHTML = `
+                    <div class="flex-1">
+                        <span class="font-semibold text-dark">${milestone.name}</span>
+                        <p class="text-sm text-gray-500">Goal: ₹${milestone.target.toFixed(2)} - Progress: ${progress.toFixed(0)}%</p>
+                    </div>
+                    <i class="fas ${statusIcon} text-lg ${statusColor}"></i>
+                    <button data-id="${milestone.id}" class="remove-milestone ml-3 text-danger hover:text-danger/80 transition duration-200"><i class="fas fa-times-circle"></i></button>
+                `;
+                listEl.appendChild(item);
+                
+                // Check for automatic achievement and update
+                if (currentSaved >= milestone.target && !milestone.achieved) {
+                    milestone.achieved = true;
+                    showNotification(`Milestone Achieved: ${milestone.name}!`, 'success');
+                    // Save the updated status
+                    allMilestones[currentUser.username] = userMilestones;
+                    saveMilestones(allMilestones);
+                    // Re-render to show the updated icon
+                    renderMilestones();
+                }
+            });
+            
+            // Attach listener for removal
+            document.querySelectorAll('.remove-milestone').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idToRemove = parseInt(e.currentTarget.getAttribute('data-id'));
+                    const milestones = loadMilestones();
+                    milestones[currentUser.username] = milestones[currentUser.username].filter(m => m.id !== idToRemove);
+                    saveMilestones(milestones);
+                    showNotification('Milestone removed.', 'danger');
+                    renderMilestones();
+                });
+            });
+        };
+
 
         // --- 7. PROFILE LOGIC ---
         const updateProfileSection = () => {
@@ -759,17 +918,19 @@
             getElement('chatbotSendBtn').disabled = false;
         };
 
-        // --- 8. GEMINI CHATBOT LOGIC ---
+        // --- 8. GEMINI CHATBOT LOGIC (Uses new totalSaved for context) ---
 
         const appendMessage = (message, isUser = false) => {
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message p-3 rounded-xl max-w-[85%] ${isUser ? 'self-end bg-primary text-white rounded-tr-none' : 'self-start bg-gray-100 text-gray-700 rounded-tl-none'}`;
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            
+            messageDiv.className = `message p-3 rounded-xl max-w-[85%] ${isUser ? 'self-end bg-primary text-white rounded-tr-none' : 'self-start rounded-tl-none'} ${isDarkMode && !isUser ? 'bg-dark-card text-light' : 'bg-gray-100 text-gray-700'}`;
             messageDiv.textContent = message;
             getElement('chatbotMessages').appendChild(messageDiv);
             getElement('chatbotMessages').scrollTop = getElement('chatbotMessages').scrollHeight;
             
-            // Dark mode adjustment for bot messages
-            if (!isUser && document.body.classList.contains('dark-mode')) {
+            // Dark mode adjustment for bot messages after creation
+            if (!isUser && isDarkMode) {
                  messageDiv.classList.remove('bg-gray-100', 'text-gray-700');
                  messageDiv.classList.add('bg-dark-card', 'text-light');
             }
@@ -786,21 +947,18 @@
             sendBtn.disabled = true;
 
             const typingIndicator = document.createElement('div');
-            typingIndicator.className = 'message bot-message self-start p-3 bg-gray-100 text-gray-700 rounded-xl rounded-tl-none max-w-[85%] flex items-center space-x-2';
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            const typingClasses = isDarkMode ? 'bg-dark-card text-light' : 'bg-gray-100 text-gray-700';
+
+            typingIndicator.className = `message bot-message self-start p-3 rounded-xl rounded-tl-none max-w-[85%] flex items-center space-x-2 ${typingClasses}`;
             typingIndicator.innerHTML = `Thinking... <div class="loading !w-3 !h-3 !border-gray-500 !border-t-primary"></div>`;
             getElement('chatbotMessages').appendChild(typingIndicator);
             getElement('chatbotMessages').scrollTop = getElement('chatbotMessages').scrollHeight;
-
-            // Apply dark mode styling to the typing indicator if active
-            if (document.body.classList.contains('dark-mode')) {
-                 typingIndicator.classList.remove('bg-gray-100', 'text-gray-700');
-                 typingIndicator.classList.add('bg-dark-card', 'text-light');
-            }
-
+            
             try {
                 const summary = getExpenseSummary();
-                // Include initial balance in the prompt for context on savings
-                const prompt = `Act as a helpful financial advisor. The user is asking: "${message}". Their current financial summary is: Balance: ₹${currentUser.balance.toFixed(2)}, Initial Balance: ₹${initialBalance.toFixed(2)}, Total Spent: ₹${summary.total.toFixed(2)}, Shopping: ₹${summary.shopping.toFixed(2)}, Food: ₹${summary.food.toFixed(2)}, Bills: ₹${summary.bills.toFixed(2)}, Other: ₹${summary.other.toFixed(2)}. Based on this data, answer their question and provide specific, actionable advice on spending less and saving more. Keep the tone friendly and encouraging.`;
+                // Pass new totalSaved property to the AI for better context
+                const prompt = `Act as a helpful financial advisor. The user is asking: "${message}". Their current financial summary is: Balance: ₹${currentUser.balance.toFixed(2)}, Initial Balance: ₹${initialBalance.toFixed(2)}, Total Saved: ₹${currentUser.totalSaved.toFixed(2)}, Total Spent: ₹${summary.total.toFixed(2)}, Shopping: ₹${summary.shopping.toFixed(2)}, Food: ₹${summary.food.toFixed(2)}, Bills: ₹${summary.bills.toFixed(2)}, Other: ₹${summary.other.toFixed(2)}. Based on this data, answer their question and provide specific, actionable advice on spending less and saving more. Keep the tone friendly and encouraging.`;
 
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${aiApiKey}`;
                 
@@ -855,6 +1013,9 @@
             // Event Listeners for Dashboard
             getElement('expenseForm').addEventListener('submit', addExpense);
             
+            // New: Save Money Listener
+            getElement('saveMoneyForm').addEventListener('submit', handleSaveMoney);
+            
             // Income Modal Listeners
             getElement('addIncomeBtn').addEventListener('click', () => {
                 getElement('incomeModal').classList.remove('hidden');
@@ -865,6 +1026,7 @@
             });
             getElement('incomeForm').addEventListener('submit', addIncome);
             
+            // Navigation Listeners
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const targetId = e.currentTarget.getAttribute('data-target');
@@ -877,11 +1039,13 @@
             // Dark Mode Toggle
             getElement('toggleDarkMode').addEventListener('click', () => {
                 const isDarkMode = getElement('body').classList.toggle('dark-mode');
+                
                 // Redraw chart to update colors for dark mode
                 if (expenseChartInstance) updateInsightsUI();
 
-                // Change chatbot message background in dark mode
-                document.querySelectorAll('.chatbot-messages .message:not(.self-end)').forEach(msg => {
+                // Recolor all existing bot messages and expense items
+                const botMessages = document.querySelectorAll('.chatbot-messages .message:not(.self-end)');
+                botMessages.forEach(msg => {
                     if (isDarkMode) {
                         msg.classList.remove('bg-gray-100', 'text-gray-700');
                         msg.classList.add('bg-dark-card', 'text-light');
@@ -890,6 +1054,9 @@
                         msg.classList.remove('bg-dark-card', 'text-light');
                     }
                 });
+                
+                // Recolor expense items on dashboard
+                renderExpenses();
             });
             
             // AI Chatbot Listeners
@@ -904,12 +1071,16 @@
             getElement('chatbotInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') handleChatMessage();
             });
+            
+            // New: Milestone Listener
+            getElement('addMilestoneForm').addEventListener('submit', addMilestone);
 
             // Reset App Button
             getElement('resetAppBtn').addEventListener('click', () => {
-                if (confirm('Are you sure you want to completely reset the application? All user data, expenses, and the AI key will be permanently deleted.')) {
+                if (confirm('Are you sure you want to completely reset the application? All user data, expenses, goals, and the AI key will be permanently deleted.')) {
                     localStorage.removeItem(STORAGE_KEY);
                     localStorage.removeItem(AI_KEY_STORAGE_KEY);
+                    localStorage.removeItem(MILESTONE_STORAGE_KEY); // Remove milestones too
                     localStorage.removeItem('current_user');
                     currentUser = null;
                     aiApiKey = '';
