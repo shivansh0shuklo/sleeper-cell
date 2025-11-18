@@ -27,9 +27,37 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%); }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-image: url('https://i.imgur.com/your-image-url.jpg'); /* REPLACE with the actual image URL */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* Keeps background fixed when scrolling */
+            position: relative; /* Needed for pseudo-element overlay */
+            transition: background-color 0.3s ease, color 0.3s ease; /* Smooth dark mode transition */
+            overflow-y: scroll; /* Ensure scrollbar if content exceeds viewport */
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.7); /* Light overlay for readability */
+            backdrop-filter: blur(8px); /* Blur effect on the background */
+            z-index: -1; /* Place behind content */
+            transition: background-color 0.3s ease;
+        }
+
+        .dark-mode body::before {
+            background-color: rgba(0, 0, 0, 0.7); /* Darker overlay for dark mode */
+        }
+        
+        /* Dark mode styles */
         .dark-mode {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: #e2e8f0;
         }
         .dark-mode .bg-white { background-color: #2d3748 !important; }
@@ -38,6 +66,9 @@
         .dark-mode .border-gray-200 { border-color: #4a5568; }
         .dark-mode .message.bot-message { background-color: #1a202c; color: #e2e8f0; }
         .dark-mode .expense-item { background-color: #1a202c !important; }
+        .dark-mode .nav-btn.text-gray-700 { color: #a0aec0 !important; }
+        .dark-mode .nav-btn:hover { background-color: #1a202c !important; }
+        .dark-mode .chart-title { color: #e2e8f0 !important; }
         
         .loading {
             display: inline-block;
@@ -56,20 +87,7 @@
 </head>
 <body class="p-4 md:p-8 transition-colors duration-300" id="body">
     
-    <div class="max-w-6xl mx-auto">
-        <!-- AI API KEY MODAL -->
-        <div class="modal fixed inset-0 flex items-center justify-center hidden" id="apiKeyModal">
-            <div class="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-lg">
-                <h2 class="text-xl font-bold text-primary mb-4">🤖 Enter Gemini API Key</h2>
-                <p class="text-gray-700 mb-4">To enable the AI Chatbot, please enter your API key. This key is stored only in your browser (Local Storage).</p>
-                <input type="text" id="geminiApiKeyInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary mb-4" placeholder="AI API Key">
-                <button id="saveApiKeyBtn" class="w-full bg-primary text-white p-3 rounded-lg font-semibold hover:bg-secondary transition duration-200">Save Key & Start</button>
-                <button id="skipApiKeyBtn" class="w-full mt-2 bg-gray-500 text-white p-3 rounded-lg font-semibold hover:bg-gray-700 transition duration-200">Skip (Disable Chatbot)</button>
-            </div>
-        </div>
-
-        <!-- AUTHENTICATION PAGE (Simplified) -->
-        <div class="flex flex-col min-h-screen items-center justify-center" id="authPage">
+    <div class="max-w-6xl mx-auto relative z-10"> <!-- Added relative z-10 to ensure content is above the overlay --><!-- AI API KEY MODAL - REMOVED --><!-- AUTHENTICATION PAGE (Simplified) --><div class="flex flex-col min-h-screen items-center justify-center" id="authPage">
             <div class="text-center mb-10">
                 <i class="fas fa-wallet text-6xl text-primary mb-4"></i>
                 <h1 class="text-5xl font-extrabold text-dark transition-colors duration-300">FINITY</h1>
@@ -87,6 +105,11 @@
                         <label for="authPassword" class="block text-gray-700 font-medium mb-2">Password</label>
                         <input type="password" id="authPassword" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition-colors duration-300" placeholder="Enter password" required>
                     </div>
+                    <!-- Initial Balance Input (Visible only during registration) -->
+                    <div class="mb-4 hidden" id="initialBalanceGroup">
+                        <label for="initialBalance" class="block text-gray-700 font-medium mb-2">Initial Balance (₹)</label>
+                        <input type="number" id="initialBalance" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition-colors duration-300" placeholder="e.g., 20000" min="0" step="0.01" required>
+                    </div>
                     <button type="submit" class="w-full bg-primary text-white p-3 rounded-lg font-semibold hover:bg-secondary transition duration-200">
                         <span id="authBtnText">Login</span>
                     </button>
@@ -97,10 +120,8 @@
             </div>
         </div>
 
-        <!-- DASHBOARD PAGE -->
-        <div class="hidden" id="dashboardPage">
-            <!-- Header -->
-            <header class="bg-white p-4 md:p-6 rounded-xl shadow-lg mb-6 flex justify-between items-center transition-colors duration-300">
+        <!-- DASHBOARD PAGE --><div class="hidden" id="dashboardPage">
+            <!-- Header --><header class="bg-white p-4 md:p-6 rounded-xl shadow-lg mb-6 flex justify-between items-center transition-colors duration-300">
                 <div class="flex items-center space-x-3">
                     <i class="fas fa-wallet text-3xl text-primary"></i>
                     <h1 class="text-2xl font-bold text-dark transition-colors duration-300">Finity</h1>
@@ -118,10 +139,8 @@
                 </div>
             </header>
 
-            <!-- Main Content Area (Tabs/Sections) -->
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <!-- Sidebar Navigation -->
-                <nav class="lg:col-span-1 bg-white p-4 rounded-xl shadow-lg transition-colors duration-300 h-fit sticky top-6">
+            <!-- Main Content Area (Tabs/Sections) --><div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- Sidebar Navigation --><nav class="lg:col-span-1 bg-white p-4 rounded-xl shadow-lg transition-colors duration-300 h-fit sticky top-6">
                     <h3 class="text-lg font-bold text-primary mb-4 pb-2 border-b border-gray-200">Menu</h3>
                     <ul class="space-y-2">
                         <li><button class="nav-btn w-full text-left p-3 rounded-lg flex items-center space-x-3 bg-primary text-white" data-target="dashContent"><i class="fas fa-chart-line"></i><span>Dashboard</span></button></li>
@@ -131,14 +150,11 @@
                     </ul>
                 </nav>
 
-                <!-- Content Panels -->
-                <main class="lg:col-span-3">
-                    <!-- Dashboard Content -->
-                    <div id="dashContent" class="content-panel space-y-6">
+                <!-- Content Panels --><main class="lg:col-span-3">
+                    <!-- Dashboard Content --><div id="dashContent" class="content-panel space-y-6">
                         <h2 class="text-3xl font-bold text-dark transition-colors duration-300">Welcome, <span id="welcomeUsername">User</span>!</h2>
                         
-                        <!-- Expense Form -->
-                        <div class="bg-white p-6 rounded-xl shadow-lg transition-colors duration-300">
+                        <!-- Expense Form --><div class="bg-white p-6 rounded-xl shadow-lg transition-colors duration-300">
                             <h3 class="text-xl font-bold text-primary mb-4 flex items-center space-x-2"><i class="fas fa-plus-circle"></i><span>Add New Expense</span></h3>
                             <form id="expenseForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <input type="text" id="expenseDescription" class="md:col-span-2 p-3 border border-gray-300 rounded-lg" placeholder="Description (e.g., Coffee, Rent share)">
@@ -155,22 +171,18 @@
                             </form>
                         </div>
                         
-                        <!-- Recent Activity -->
-                        <div class="bg-white p-6 rounded-xl shadow-lg transition-colors duration-300">
+                        <!-- Recent Activity --><div class="bg-white p-6 rounded-xl shadow-lg transition-colors duration-300">
                             <h3 class="text-xl font-bold text-primary mb-4 flex items-center space-x-2"><i class="fas fa-history"></i><span>Recent Activity (Last 5)</span></h3>
                             <div id="recentExpenseList" class="space-y-3 max-h-80 overflow-y-auto">
-                                <!-- Expenses will be inserted here -->
-                                <p class="text-gray-500 text-center py-4">No recent expenses recorded.</p>
+                                <!-- Expenses will be inserted here --><p class="text-gray-500 text-center py-4">No recent expenses recorded.</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Insights Content -->
-                    <div id="insightsContent" class="content-panel space-y-6 hidden">
+                    <!-- Insights Content --><div id="insightsContent" class="content-panel space-y-6 hidden">
                         <h2 class="text-3xl font-bold text-dark transition-colors duration-300">Detailed Financial Insights</h2>
                         
-                        <!-- Chart Area -->
-                        <div class="bg-white p-6 rounded-xl shadow-lg transition-colors duration-300">
+                        <!-- Chart Area --><div class="bg-white p-6 rounded-xl shadow-lg transition-colors duration-300">
                             <h3 class="chart-title text-xl font-bold text-primary mb-4 text-center">Expense Breakdown by Category</h3>
                             <div class="p-4" id="chartWrapper">
                                 <canvas id="expenseChart" style="max-height: 400px;"></canvas>
@@ -178,8 +190,7 @@
                             </div>
                         </div>
 
-                        <!-- Summary Cards -->
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="insightsSummary">
+                        <!-- Summary Cards --><div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="insightsSummary">
                             <div class="bg-white p-4 rounded-xl shadow-lg text-center border-b-4 border-warning">
                                 <p class="text-gray-700 text-sm">Total Spent</p>
                                 <p class="text-2xl font-bold text-dark mt-1" id="totalSpent">₹0.00</p>
@@ -199,8 +210,7 @@
                         </div>
                     </div>
                     
-                    <!-- Achievements Content -->
-                    <div id="achievementsContent" class="content-panel space-y-6 hidden">
+                    <!-- Achievements Content --><div id="achievementsContent" class="content-panel space-y-6 hidden">
                         <h2 class="text-3xl font-bold text-dark transition-colors duration-300">Your Financial Milestones</h2>
                         
                         <div class="bg-white p-6 rounded-xl shadow-lg space-y-4">
@@ -251,8 +261,7 @@
                         </div>
                     </div>
 
-                    <!-- Profile Content -->
-                    <div id="profileContent" class="content-panel space-y-6 hidden">
+                    <!-- Profile Content --><div id="profileContent" class="content-panel space-y-6 hidden">
                         <h2 class="text-3xl font-bold text-dark transition-colors duration-300">User Profile</h2>
                         <div class="bg-white p-6 rounded-xl shadow-lg">
                             <h3 class="text-xl font-bold text-primary mb-4">Account Information</h3>
@@ -269,6 +278,22 @@
                                     <span class="font-medium text-gray-700">AI Key Status:</span>
                                     <span id="aiKeyStatus" class="font-semibold text-green-500"></span>
                                 </div>
+                                <div class="flex justify-between border-b pb-2">
+                                    <span class="font-medium text-gray-700">Initial Balance:</span>
+                                    <span id="profileInitialBalance" class="font-semibold"></span>
+                                </div>
+                                <div class="flex justify-between border-b pb-2">
+                                    <span class="font-medium text-gray-700">Current Balance:</span>
+                                    <span id="profileCurrentBalance" class="font-semibold"></span>
+                                </div>
+                                <div class="flex justify-between border-b pb-2">
+                                    <span class="font-medium text-gray-700">Total Expenses:</span>
+                                    <span id="profileTotalExpenses" class="font-semibold"></span>
+                                </div>
+                                <!-- Add Balance Button -->
+                                <button id="addBalanceBtn" class="w-full mt-2 bg-success text-white p-3 rounded-lg font-semibold hover:bg-success/80 transition duration-200 flex items-center justify-center space-x-2">
+                                    <i class="fas fa-plus-circle"></i><span>Add Balance</span>
+                                </button>
                                 <button id="resetAppBtn" class="w-full mt-4 bg-danger text-white p-3 rounded-lg font-semibold hover:bg-danger/80 transition duration-200">
                                     <i class="fas fa-trash"></i> Reset App (Clear All Data & Logout)
                                 </button>
@@ -279,8 +304,7 @@
             </div>
         </div>
 
-        <!-- Chatbot Container -->
-        <div class="chatbot-container fixed bottom-5 right-5 z-40">
+        <!-- Chatbot Container --><div class="chatbot-container fixed bottom-5 right-5 z-40">
             <button class="chatbot-btn w-16 h-16 rounded-full bg-primary text-white text-2xl shadow-xl hover:bg-secondary transition duration-200 flex items-center justify-center" id="chatbotToggleBtn">
                 <i class="fas fa-robot"></i>
             </button>
@@ -305,7 +329,7 @@
         const AI_KEY_STORAGE_KEY = 'finity_gemini_api_key';
         const GEMINI_MODEL = 'gemini-2.5-flash-preview-09-2025';
         let currentUser = null;
-        let aiApiKey = localStorage.getItem(AI_KEY_STORAGE_KEY) || '';
+        let aiApiKey = 'AIzaSyAwsQqMPAkp3VFjVKAdrXHOLkUsYcwgNBI'; // DEFAULT KEY SET HERE
         let expenseChartInstance = null;
         
         // --- 1. LOCAL DATA MANAGEMENT ---
@@ -345,12 +369,23 @@
             const data = loadData();
             
             if (isRegisterMode) {
+                const initialBalance = parseFloat(getElement('initialBalance').value);
+                if (isNaN(initialBalance) || initialBalance < 0) {
+                    alert('Please enter a valid initial balance (>= 0).');
+                    return;
+                }
+                
                 // Register
                 if (data.users[username]) {
                     alert('Username already exists!');
                     return;
                 }
-                data.users[username] = { password, balance: 50000, joined: new Date().toISOString() };
+                // Store the default API key if not already stored (ensures chatbot is always enabled if the user logs in fresh)
+                if (!localStorage.getItem(AI_KEY_STORAGE_KEY)) {
+                    localStorage.setItem(AI_KEY_STORAGE_KEY, aiApiKey);
+                }
+                
+                data.users[username] = { password, balance: initialBalance, initialBalance: initialBalance, joined: new Date().toISOString() }; // Store initial balance
                 saveData(data);
                 alert('Registration successful! Please log in.');
                 isRegisterMode = false;
@@ -374,6 +409,8 @@
             getElement('authTitle').textContent = isRegisterMode ? 'Sign Up' : 'Login';
             getElement('authBtnText').textContent = isRegisterMode ? 'Register' : 'Login';
             getElement('toggleAuthMode').textContent = isRegisterMode ? 'Already have an account? Login' : 'New User? Sign Up';
+            // Show/hide initial balance field
+            getElement('initialBalanceGroup').classList.toggle('hidden', !isRegisterMode);
             getElement('authForm').reset();
         };
 
@@ -414,7 +451,7 @@
                 return;
             }
             if (amount > currentUser.balance) {
-                alert('Insufficient balance!');
+                alert('Insufficient balance! Current Balance: ' + currentUser.balance.toFixed(2));
                 return;
             }
 
@@ -536,11 +573,11 @@
             const userExpenses = data.expenses.filter(exp => exp.username === currentUser.username);
             const totalSpent = getExpenseSummary().total;
             
-            // 1. Savings Starter (Goal: Save 5% of starting balance, assuming 50000 starting)
-            const initialBalance = 50000;
-            const targetSavings = initialBalance * 0.05; // 2500
+            // 1. Savings Starter (Goal: Save 5% of *initial* balance)
+            const initialBalance = currentUser.initialBalance || 0; // Use stored initial balance
+            const targetSavings = initialBalance * 0.05; // 5% of initial balance
             const currentSavings = initialBalance - totalSpent;
-            const progress = Math.min(100, Math.max(0, (currentSavings / targetSavings) * 100));
+            const progress = initialBalance > 0 ? Math.min(100, Math.max(0, (currentSavings / targetSavings) * 100)) : 0;
 
             getElement('savingsProgress').style.width = `${progress.toFixed(0)}%`;
             getElement('savingsStatus').textContent = `${progress.toFixed(0)}% Saved`;
@@ -572,18 +609,43 @@
         // --- 7. PROFILE LOGIC ---
         const updateProfileSection = () => {
             getElement('profileUsername').textContent = currentUser.username;
+            getElement('profileInitialBalance').textContent = `₹${(currentUser.initialBalance || 0).toFixed(2)}`;
+            getElement('profileCurrentBalance').textContent = `₹${currentUser.balance.toFixed(2)}`;
+            // Calculate total expenses for profile
+            const data = loadData();
+            const userExpenses = data.expenses.filter(exp => exp.username === currentUser.username);
+            const totalExpenses = userExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+            getElement('profileTotalExpenses').textContent = `₹${totalExpenses.toFixed(2)}`;
+
             const keyStatusEl = getElement('aiKeyStatus');
-            if (aiApiKey) {
-                keyStatusEl.textContent = 'Active';
-                keyStatusEl.classList.remove('text-danger');
-                keyStatusEl.classList.add('text-green-500');
-                getElement('chatbotSendBtn').disabled = false;
-            } else {
-                keyStatusEl.textContent = 'Inactive (Chatbot Disabled)';
-                keyStatusEl.classList.remove('text-green-500');
-                keyStatusEl.classList.add('text-danger');
-                getElement('chatbotSendBtn').disabled = true;
+            
+            // Since the key is set by default, the status is always active
+            keyStatusEl.textContent = 'Active (Default Key)';
+            keyStatusEl.classList.remove('text-danger');
+            keyStatusEl.classList.add('text-green-500');
+            getElement('chatbotSendBtn').disabled = false;
+        };
+
+        // --- Add Balance Modal Logic ---
+        const addBalance = () => {
+            const amountStr = prompt("Enter the amount to add to your balance:");
+            if (amountStr === null) return; // User cancelled
+
+            const amount = parseFloat(amountStr);
+            if (isNaN(amount) || amount <= 0) {
+                alert("Please enter a valid positive amount.");
+                return;
             }
+
+            const data = loadData();
+            // Update user balance and save
+            currentUser.balance += amount;
+            data.users[currentUser.username].balance = currentUser.balance;
+            saveData(data);
+
+            updateDashboardUI();
+            updateProfileSection(); // Update profile balance display
+            alert(`₹${amount.toFixed(2)} added to your balance successfully!`);
         };
 
         // --- 8. GEMINI CHATBOT LOGIC ---
@@ -646,10 +708,7 @@
         // --- 9. INITIALIZATION & EVENT LISTENERS ---
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Check for API Key first
-            if (!aiApiKey) {
-                getElement('apiKeyModal').classList.remove('hidden');
-            }
+            // NOTE: The API Key Modal logic is removed as the key is set by default.
             
             // Load and check user session
             if (checkLogin()) {
@@ -691,6 +750,9 @@
                 if (expenseChartInstance) updateInsightsUI();
             });
             
+            // Add Balance Button
+            getElement('addBalanceBtn').addEventListener('click', addBalance);
+            
             // AI Chatbot Listeners
             getElement('chatbotToggleBtn').addEventListener('click', () => {
                 getElement('chatbotWindow').classList.toggle('hidden');
@@ -705,24 +767,6 @@
                 if (e.key === 'Enter') handleChatMessage();
             });
 
-            // API Key Modal Listeners
-            getElement('saveApiKeyBtn').addEventListener('click', () => {
-                const key = getElement('geminiApiKeyInput').value.trim();
-                if (key) {
-                    aiApiKey = key;
-                    localStorage.setItem(AI_KEY_STORAGE_KEY, key);
-                    getElement('apiKeyModal').classList.add('hidden');
-                    updateProfileSection();
-                    alert('API Key saved! Chatbot is now active.');
-                } else {
-                    alert('Please enter a valid API key.');
-                }
-            });
-            getElement('skipApiKeyBtn').addEventListener('click', () => {
-                getElement('apiKeyModal').classList.add('hidden');
-                alert('Chatbot disabled. You can add a key later in the Profile section.');
-            });
-            
             // Reset App Button
             getElement('resetAppBtn').addEventListener('click', () => {
                 if (confirm('Are you sure you want to completely reset the application? All user data, expenses, and the AI key will be permanently deleted.')) {
