@@ -20,6 +20,8 @@
                         'dark': '#1d3557',
                         'light': '#f8f9fa',
                         'gray': '#6c757d',
+                        'dark-bg': '#121212', // New dark background color
+                        'dark-card': '#1e1e1e', // New dark card color
                     }
                 }
             }
@@ -33,43 +35,43 @@
             background-image: url('https://i.imgur.com/your-image-url.jpg'); /* REPLACE with the actual image URL */
             background-size: cover;
             background-position: center;
-            background-attachment: fixed; /* Keeps background fixed when scrolling */
-            position: relative; /* Needed for pseudo-element overlay */
-            transition: background-color 0.3s ease, color 0.3s ease; /* Smooth dark mode transition */
-            overflow-y: scroll; /* Ensure scrollbar if content exceeds viewport */
+            background-attachment: fixed;
+            position: relative;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            overflow-y: scroll;
         }
 
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(255, 255, 255, 0.7); /* Light overlay for readability */
-            backdrop-filter: blur(8px); /* Blur effect on the background */
-            z-index: -1; /* Place behind content */
-            transition: background-color 0.3s ease;
-        }
+        /* ---------------------------------
+           Improved Full Dark Mode Styles
+           --------------------------------- */
 
-        .dark-mode body::before {
-            background-color: rgba(0, 0, 0, 0.7); /* Darker overlay for dark mode */
-        }
-        
-        /* Dark mode styles */
+        /* Full dark screen body background and overlay */
         .dark-mode {
+            background-color: var(--tw-colors-dark-bg); /* Use the Tailwind custom color variable */
             color: #e2e8f0;
         }
-        .dark-mode .bg-white { background-color: #2d3748 !important; }
-        .dark-mode input, .dark-mode select { background-color: #1a202c !important; color: #e2e8f0; border-color: #4a5568; }
+        
+        /* Dark mode overlay to completely hide background image and ensure pure dark background */
+        .dark-mode body::before {
+            background-color: var(--tw-colors-dark-bg) !important; /* Pure black/dark overlay */
+            backdrop-filter: none;
+        }
+
+        /* Elements that are white in light mode become dark-card in dark mode */
+        .dark-mode .bg-white { background-color: var(--tw-colors-dark-card) !important; }
+        .dark-mode input, .dark-mode select { background-color: #2c2c2c !important; color: #e2e8f0; border-color: #4a5568; }
         .dark-mode .text-gray-700 { color: #a0aec0; }
         .dark-mode .border-gray-200 { border-color: #4a5568; }
-        .dark-mode .message.bot-message { background-color: #1a202c; color: #e2e8f0; }
-        .dark-mode .expense-item { background-color: #1a202c !important; }
+        .dark-mode .message.bot-message { background-color: #2c2c2c; color: #e2e8f0; }
+        .dark-mode .expense-item { background-color: #2c2c2c !important; }
         .dark-mode .nav-btn.text-gray-700 { color: #a0aec0 !important; }
-        .dark-mode .nav-btn:hover { background-color: #1a202c !important; }
-        .dark-mode .chart-title { color: #e2e8f0 !important; }
-        
+        .dark-mode .nav-btn:hover { background-color: #2c2c2c !important; }
+        .dark-mode .chart-title, .dark-mode .text-dark { color: #e2e8f0 !important; }
+        .dark-mode .text-gray-500 { color: #9ca3af !important; }
+        .dark-mode .bg-gray-50 { background-color: #2c2c2c !important; }
+        .dark-mode .border-b, .dark-mode .border-l { border-color: #4a5568 !important; }
+
+        /* General styles */
         .loading {
             display: inline-block;
             width: 1rem;
@@ -83,11 +85,28 @@
             to { transform: rotate(360deg); }
         }
         .modal { background: rgba(0, 0, 0, 0.5); z-index: 50; }
+
+        /* Notification Styling */
+        .notification-alert {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            min-width: 300px;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            z-index: 50;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8 transition-colors duration-300" id="body">
     
-    <div class="max-w-6xl mx-auto relative z-10"> <!-- Added relative z-10 to ensure content is above the overlay --><!-- AI API KEY MODAL - REMOVED --><!-- AUTHENTICATION PAGE (Simplified) --><div class="flex flex-col min-h-screen items-center justify-center" id="authPage">
+    <div class="max-w-6xl mx-auto relative z-10">
+        <div id="notificationContainer" class="fixed top-4 right-4 space-y-3 z-50">
+            </div>
+
+        <div class="flex flex-col min-h-screen items-center justify-center" id="authPage">
             <div class="text-center mb-10">
                 <i class="fas fa-wallet text-6xl text-primary mb-4"></i>
                 <h1 class="text-5xl font-extrabold text-dark transition-colors duration-300">FINITY</h1>
@@ -115,8 +134,8 @@
             </div>
         </div>
 
-        <!-- DASHBOARD PAGE --><div class="hidden" id="dashboardPage">
-            <!-- Header --><header class="bg-white p-4 md:p-6 rounded-xl shadow-lg mb-6 flex justify-between items-center transition-colors duration-300">
+        <div class="hidden" id="dashboardPage">
+            <header class="bg-white p-4 md:p-6 rounded-xl shadow-lg mb-6 flex justify-between items-center transition-colors duration-300">
                 <div class="flex items-center space-x-3">
                     <i class="fas fa-wallet text-3xl text-primary"></i>
                     <h1 class="text-2xl font-bold text-dark transition-colors duration-300">Finity</h1>
@@ -125,6 +144,9 @@
                     <div class="text-sm font-semibold p-2 bg-success text-white rounded-full px-4" id="currentBalanceDisplay">
                         Balance: ₹0.00
                     </div>
+                    <button id="addIncomeBtn" class="bg-primary text-white p-2 rounded-full hover:bg-secondary transition duration-200">
+                        <i class="fas fa-plus text-xl"></i>
+                    </button>
                     <button id="logoutBtn" class="text-gray-700 hover:text-danger p-2 rounded-full transition duration-200">
                         <i class="fas fa-sign-out-alt text-xl"></i>
                     </button>
@@ -134,8 +156,8 @@
                 </div>
             </header>
 
-            <!-- Main Content Area (Tabs/Sections) --><div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <!-- Sidebar Navigation --><nav class="lg:col-span-1 bg-white p-4 rounded-xl shadow-lg transition-colors duration-300 h-fit sticky top-6">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <nav class="lg:col-span-1 bg-white p-4 rounded-xl shadow-lg transition-colors duration-300 h-fit sticky top-6">
                     <h3 class="text-lg font-bold text-primary mb-4 pb-2 border-b border-gray-200">Menu</h3>
                     <ul class="space-y-2">
                         <li><button class="nav-btn w-full text-left p-3 rounded-lg flex items-center space-x-3 bg-primary text-white" data-target="dashContent"><i class="fas fa-chart-line"></i><span>Dashboard</span></button></li>
@@ -145,11 +167,11 @@
                     </ul>
                 </nav>
 
-                <!-- Content Panels --><main class="lg:col-span-3">
-                    <!-- Dashboard Content --><div id="dashContent" class="content-panel space-y-6">
+                <main class="lg:col-span-3">
+                    <div id="dashContent" class="content-panel space-y-6">
                         <h2 class="text-3xl font-bold text-dark transition-colors duration-300">Welcome, <span id="welcomeUsername">User</span>!</h2>
                         
-                        <!-- Expense Form --><div class="bg-white p-6 rounded-xl shadow-lg transition-colors duration-300">
+                        <div class="bg-white p-6 rounded-xl shadow-lg transition-colors duration-300">
                             <h3 class="text-xl font-bold text-primary mb-4 flex items-center space-x-2"><i class="fas fa-plus-circle"></i><span>Add New Expense</span></h3>
                             <form id="expenseForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <input type="text" id="expenseDescription" class="md:col-span-2 p-3 border border-gray-300 rounded-lg" placeholder="Description (e.g., Coffee, Rent share)">
@@ -166,18 +188,18 @@
                             </form>
                         </div>
                         
-                        <!-- Recent Activity --><div class="bg-white p-6 rounded-xl shadow-lg transition-colors duration-300">
+                        <div class="bg-white p-6 rounded-xl shadow-lg transition-colors duration-300">
                             <h3 class="text-xl font-bold text-primary mb-4 flex items-center space-x-2"><i class="fas fa-history"></i><span>Recent Activity (Last 5)</span></h3>
                             <div id="recentExpenseList" class="space-y-3 max-h-80 overflow-y-auto">
-                                <!-- Expenses will be inserted here --><p class="text-gray-500 text-center py-4">No recent expenses recorded.</p>
+                                <p class="text-gray-500 text-center py-4">No recent expenses recorded.</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Insights Content --><div id="insightsContent" class="content-panel space-y-6 hidden">
+                    <div id="insightsContent" class="content-panel space-y-6 hidden">
                         <h2 class="text-3xl font-bold text-dark transition-colors duration-300">Detailed Financial Insights</h2>
                         
-                        <!-- Chart Area --><div class="bg-white p-6 rounded-xl shadow-lg transition-colors duration-300">
+                        <div class="bg-white p-6 rounded-xl shadow-lg transition-colors duration-300">
                             <h3 class="chart-title text-xl font-bold text-primary mb-4 text-center">Expense Breakdown by Category</h3>
                             <div class="p-4" id="chartWrapper">
                                 <canvas id="expenseChart" style="max-height: 400px;"></canvas>
@@ -185,7 +207,7 @@
                             </div>
                         </div>
 
-                        <!-- Summary Cards --><div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="insightsSummary">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="insightsSummary">
                             <div class="bg-white p-4 rounded-xl shadow-lg text-center border-b-4 border-warning">
                                 <p class="text-gray-700 text-sm">Total Spent</p>
                                 <p class="text-2xl font-bold text-dark mt-1" id="totalSpent">₹0.00</p>
@@ -205,7 +227,7 @@
                         </div>
                     </div>
                     
-                    <!-- Achievements Content --><div id="achievementsContent" class="content-panel space-y-6 hidden">
+                    <div id="achievementsContent" class="content-panel space-y-6 hidden">
                         <h2 class="text-3xl font-bold text-dark transition-colors duration-300">Your Financial Milestones</h2>
                         
                         <div class="bg-white p-6 rounded-xl shadow-lg space-y-4">
@@ -256,7 +278,7 @@
                         </div>
                     </div>
 
-                    <!-- Profile Content --><div id="profileContent" class="content-panel space-y-6 hidden">
+                    <div id="profileContent" class="content-panel space-y-6 hidden">
                         <h2 class="text-3xl font-bold text-dark transition-colors duration-300">User Profile</h2>
                         <div class="bg-white p-6 rounded-xl shadow-lg">
                             <h3 class="text-xl font-bold text-primary mb-4">Account Information</h3>
@@ -283,7 +305,7 @@
             </div>
         </div>
 
-        <!-- Chatbot Container --><div class="chatbot-container fixed bottom-5 right-5 z-40">
+        <div class="chatbot-container fixed bottom-5 right-5 z-40">
             <button class="chatbot-btn w-16 h-16 rounded-full bg-primary text-white text-2xl shadow-xl hover:bg-secondary transition duration-200 flex items-center justify-center" id="chatbotToggleBtn">
                 <i class="fas fa-robot"></i>
             </button>
@@ -303,6 +325,23 @@
 
     </div>
 
+    <div id="incomeModal" class="modal fixed inset-0 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl p-6 w-full max-w-sm">
+            <h3 class="text-xl font-bold text-primary mb-4">Add Income</h3>
+            <form id="incomeForm">
+                <div class="mb-4">
+                    <label for="incomeAmount" class="block text-gray-700 font-medium mb-2">Amount (₹)</label>
+                    <input type="number" id="incomeAmount" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition-colors duration-300" placeholder="Enter amount" min="0.01" step="0.01" required>
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" id="closeIncomeModal" class="bg-gray-300 text-dark p-3 rounded-lg font-semibold hover:bg-gray-400 transition duration-200">Cancel</button>
+                    <button type="submit" class="bg-success text-white p-3 rounded-lg font-semibold hover:bg-success/80 transition duration-200">Add Income</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
     <script>
         const STORAGE_KEY = 'finity_prototype_data';
         const AI_KEY_STORAGE_KEY = 'finity_gemini_api_key';
@@ -310,7 +349,8 @@
         let currentUser = null;
         let aiApiKey = 'AIzaSyAwsQqMPAkp3VFjVKAdrXHOLkUsYcwgNBI'; // DEFAULT KEY SET HERE
         let expenseChartInstance = null;
-        
+        let initialBalance = 0; // The original balance before any spending, used for 10% notification logic.
+
         // --- 1. LOCAL DATA MANAGEMENT ---
         const loadData = () => JSON.parse(localStorage.getItem(STORAGE_KEY)) || { users: {}, expenses: [] };
         const saveData = (data) => localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -338,6 +378,41 @@
             getElement(targetId).classList.remove('hidden');
         };
         
+        // Notification Alert Function
+        const showNotification = (message, type = 'success', duration = 3000) => {
+            const container = getElement('notificationContainer');
+            const alert = document.createElement('div');
+            
+            let bgColor = 'bg-green-500';
+            let icon = 'fa-check-circle';
+            
+            if (type === 'warning') {
+                bgColor = 'bg-yellow-500';
+                icon = 'fa-exclamation-triangle';
+            } else if (type === 'danger') {
+                bgColor = 'bg-danger';
+                icon = 'fa-times-circle';
+            }
+
+            alert.className = `notification-alert ${bgColor} text-white flex items-center space-x-3 opacity-0 translate-x-full`;
+            alert.innerHTML = `<i class="fas ${icon} text-lg"></i><span>${message}</span>`;
+            
+            container.appendChild(alert);
+
+            // Animate in
+            setTimeout(() => {
+                alert.classList.remove('opacity-0', 'translate-x-full');
+                alert.classList.add('opacity-100', 'translate-x-0');
+            }, 10);
+
+            // Animate out and remove
+            setTimeout(() => {
+                alert.classList.remove('opacity-100', 'translate-x-0');
+                alert.classList.add('opacity-0', 'translate-x-full');
+                setTimeout(() => alert.remove(), 300);
+            }, duration);
+        };
+
         // --- 3. AUTHENTICATION (LOCAL STORAGE) ---
         let isRegisterMode = false;
 
@@ -350,17 +425,17 @@
             if (isRegisterMode) {
                 // Register
                 if (data.users[username]) {
-                    alert('Username already exists!');
+                    showNotification('Username already exists!', 'danger');
                     return;
                 }
-                // Store the default API key if not already stored (ensures chatbot is always enabled if the user logs in fresh)
                 if (!localStorage.getItem(AI_KEY_STORAGE_KEY)) {
                     localStorage.setItem(AI_KEY_STORAGE_KEY, aiApiKey);
                 }
                 
-                data.users[username] = { password, balance: 50000, joined: new Date().toISOString() };
+                // Balance starts at 0 as requested
+                data.users[username] = { password, balance: 0, initialBalance: 0, joined: new Date().toISOString() };
                 saveData(data);
-                alert('Registration successful! Please log in.');
+                showNotification('Registration successful! Please log in.', 'success');
                 isRegisterMode = false;
                 updateAuthForm();
             } else {
@@ -373,7 +448,7 @@
                     updateDashboardUI();
                     updateNavState('dashContent');
                 } else {
-                    alert('Invalid username or password.');
+                    showNotification('Invalid username or password.', 'danger');
                 }
             }
         };
@@ -392,6 +467,13 @@
                 const user = data.users[username];
                 if (user) {
                     currentUser = { username, ...user };
+                    // Initialize initialBalance if missing (for legacy or first login after code change)
+                    if (currentUser.initialBalance === undefined) {
+                        currentUser.initialBalance = currentUser.balance; 
+                        data.users[username].initialBalance = currentUser.initialBalance;
+                        saveData(data);
+                    }
+                    initialBalance = currentUser.initialBalance;
                     switchView('dashboardPage');
                     return true;
                 }
@@ -400,7 +482,7 @@
             return false;
         };
         
-        // --- 4. DASHBOARD & EXPENSE LOGIC ---
+        // --- 4. DASHBOARD & EXPENSE/INCOME LOGIC ---
         
         const updateDashboardUI = () => {
             if (!currentUser) return;
@@ -411,6 +493,26 @@
             updateProfileSection();
         };
 
+        const checkSpendingNotification = (oldBalance, newBalance) => {
+            if (initialBalance === 0) return; // Cannot calculate percentage spent if initial is 0
+            
+            const oldSpent = initialBalance - oldBalance;
+            const newSpent = initialBalance - newBalance;
+            
+            // Check for every 10% spent mark
+            for (let i = 1; i <= 9; i++) {
+                const spendingMark = initialBalance * (i / 10);
+                
+                // Check if the old spent amount was below the mark and the new spent amount is above or at the mark
+                // Also check if the newSpent is positive (i.e., we are spending from the initial balance, not saving)
+                if (newSpent > 0 && oldSpent < spendingMark && newSpent >= spendingMark) {
+                    const percent = i * 10;
+                    showNotification(`Heads up! You have now spent ${percent}% (₹${newSpent.toFixed(2)}) of your initial balance (₹${initialBalance.toFixed(2)}).`, 'warning');
+                    break;
+                }
+            }
+        };
+
         const addExpense = (e) => {
             e.preventDefault();
             const description = getElement('expenseDescription').value.trim();
@@ -418,19 +520,22 @@
             const category = getElement('expenseCategory').value;
 
             if (amount <= 0 || isNaN(amount)) {
-                alert('Please enter a valid amount.');
+                showNotification('Please enter a valid amount.', 'danger');
                 return;
             }
-            if (amount > currentUser.balance) {
-                alert('Insufficient balance! Current Balance: ' + currentUser.balance.toFixed(2));
+            
+            if (currentUser.balance < amount) {
+                showNotification(`Insufficient balance! Current Balance: ₹${currentUser.balance.toFixed(2)}`, 'danger');
                 return;
             }
 
             const data = loadData();
+            const oldBalance = currentUser.balance;
+
             const newExpense = {
                 username: currentUser.username,
                 description,
-                amount,
+                amount: -amount, // Store as negative for consistency (expense)
                 category,
                 date: new Date().toISOString()
             };
@@ -441,36 +546,83 @@
             data.expenses.push(newExpense);
             saveData(data);
             
+            checkSpendingNotification(oldBalance, currentUser.balance);
+            showNotification(`Expense tracked: ₹${amount.toFixed(2)} for ${category}.`, 'warning');
             updateDashboardUI();
             updateInsightsUI();
             getElement('expenseForm').reset();
         };
 
+        const addIncome = (e) => {
+            e.preventDefault();
+            const amount = parseFloat(getElement('incomeAmount').value);
+
+            if (amount <= 0 || isNaN(amount)) {
+                showNotification('Please enter a valid income amount.', 'danger');
+                return;
+            }
+
+            const data = loadData();
+            const oldBalance = currentUser.balance;
+
+            const newIncome = {
+                username: currentUser.username,
+                description: 'Income',
+                amount: amount, // Store as positive (income)
+                category: 'income',
+                date: new Date().toISOString()
+            };
+
+            // Update user balance, initial balance, and save
+            currentUser.balance += amount;
+            // Only update initialBalance if it's the first income or if the existing balance is 0.
+            // A more complex system would handle this differently, but for a prototype, this works.
+            if (initialBalance === 0 || initialBalance === oldBalance) {
+                initialBalance = currentUser.balance;
+                currentUser.initialBalance = initialBalance;
+            }
+
+            data.users[currentUser.username].balance = currentUser.balance;
+            data.users[currentUser.username].initialBalance = currentUser.initialBalance;
+            data.expenses.push(newIncome); // Storing income in expenses array for simplicity
+            saveData(data);
+            
+            showNotification(`Income added: + ₹${amount.toFixed(2)}!`, 'success');
+            updateDashboardUI();
+            updateInsightsUI();
+            getElement('incomeModal').classList.add('hidden');
+            getElement('incomeForm').reset();
+        };
+
         const renderExpenses = () => {
             const listEl = getElement('recentExpenseList');
             const data = loadData();
-            const userExpenses = data.expenses
-                .filter(exp => exp.username === currentUser.username)
+            const userActivity = data.expenses
+                .filter(exp => exp.username === currentUser.username && exp.category !== 'income') // Only show expenses
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
                 .slice(0, 5);
 
             listEl.innerHTML = '';
 
-            if (userExpenses.length === 0) {
+            if (userActivity.length === 0) {
                 listEl.innerHTML = '<p class="text-gray-500 text-center py-4">No recent expenses recorded.</p>';
                 return;
             }
 
-            userExpenses.forEach(exp => {
+            userActivity.forEach(exp => {
                 const categoryColor = { 'shopping': 'border-warning', 'food': 'border-success', 'bills': 'border-danger', 'other': 'border-gray-500' }[exp.category];
                 const item = document.createElement('div');
                 item.className = `expense-item flex justify-between items-center p-3 rounded-lg bg-gray-50 border-l-4 ${categoryColor} shadow-sm transition-colors duration-300`;
+                
+                // The amount is stored as a negative number for expenses, so we use Math.abs() for display
+                const displayAmount = Math.abs(exp.amount).toFixed(2);
+                
                 item.innerHTML = `
                     <div>
-                        <strong class="text-dark">${exp.description || exp.category.toUpperCase()}</strong>
+                        <strong class="text-dark">${exp.description || exp.category.charAt(0).toUpperCase() + exp.category.slice(1)}</strong>
                         <p class="text-xs text-gray-500">${new Date(exp.date).toLocaleDateString()}</p>
                     </div>
-                    <span class="text-lg font-bold text-danger">- ₹${exp.amount.toFixed(2)}</span>
+                    <span class="text-lg font-bold text-danger">- ₹${displayAmount}</span>
                 `;
                 listEl.appendChild(item);
             });
@@ -480,12 +632,19 @@
 
         const getExpenseSummary = () => {
             const data = loadData();
-            const userExpenses = data.expenses.filter(exp => exp.username === currentUser.username);
+            // Filter to only include actual *expenses* (negative amounts and not 'income' category)
+            const userExpenses = data.expenses.filter(exp => exp.username === currentUser.username && exp.amount < 0 && exp.category !== 'income');
             const summary = { total: 0, shopping: 0, food: 0, bills: 0, other: 0 };
             
             userExpenses.forEach(exp => {
-                summary.total += exp.amount;
-                summary[exp.category] += exp.amount;
+                const amount = Math.abs(exp.amount); // Use absolute amount for total spent
+                summary.total += amount;
+                if (summary[exp.category] !== undefined) {
+                    summary[exp.category] += amount;
+                } else {
+                     // Handle expenses with an 'other' category if the original data had them, or fall back to other
+                     summary.other += amount;
+                }
             });
             return summary;
         };
@@ -497,6 +656,7 @@
             getElement('shoppingTotal').textContent = `₹${summary.shopping.toFixed(2)}`;
             getElement('foodTotal').textContent = `₹${summary.food.toFixed(2)}`;
             getElement('billsTotal').textContent = `₹${summary.bills.toFixed(2)}`;
+            // The 'other' total is not explicitly in the summary cards, but is part of the chart
 
             if (summary.total === 0) {
                 if (expenseChartInstance) expenseChartInstance.destroy();
@@ -541,17 +701,29 @@
 
         const updateAchievements = () => {
             const data = loadData();
-            const userExpenses = data.expenses.filter(exp => exp.username === currentUser.username);
+            const userExpenses = data.expenses.filter(exp => exp.username === currentUser.username && exp.category !== 'income');
             const totalSpent = getExpenseSummary().total;
             
-            // 1. Savings Starter (Goal: Save 5% of starting balance, assuming 50000 starting)
-            const initialBalance = 50000;
-            const targetSavings = initialBalance * 0.05; // 2500
+            // 1. Savings Starter (Goal: Save 5% of initialBalance, if initialBalance > 0)
+            const targetSavings = initialBalance * 0.05; // 5% of the initial income
             const currentSavings = initialBalance - totalSpent;
-            const progress = Math.min(100, Math.max(0, (currentSavings / targetSavings) * 100));
+
+            // Only track progress if there was an initial balance set
+            let progress = 0;
+            if (initialBalance > 0) {
+                progress = Math.min(100, Math.max(0, (currentSavings / targetSavings) * 100));
+            }
 
             getElement('savingsProgress').style.width = `${progress.toFixed(0)}%`;
             getElement('savingsStatus').textContent = `${progress.toFixed(0)}% Saved`;
+            if (progress >= 100) {
+                 getElement('savingsProgress').classList.remove('bg-green-600');
+                 getElement('savingsProgress').classList.add('bg-blue-600');
+            } else {
+                 getElement('savingsProgress').classList.add('bg-green-600');
+                 getElement('savingsProgress').classList.remove('bg-blue-600');
+            }
+
 
             // 2. Expense Tracker Pro
             const expenseCount = userExpenses.length;
@@ -564,11 +736,10 @@
                 getElement('trackerIcon').classList.add('text-gray-400');
             }
             
-            // 3. Debt Streak (Placeholder logic for simplicity)
-            // Since this is a simple finance tracker, we assume balance > 0 means no debt
-            const debtStatusText = currentUser.balance > 0 ? "0 Days (Positive Balance)" : "Debt Detected!";
-            getElement('debtStatus').textContent = debtStatusText;
-            if (currentUser.balance > 0) {
+            // 3. No Debt Streak
+            const debtStatusText = currentUser.balance >= 0 ? "Positive Balance" : "Debt Detected!";
+            getElement('debtStatus').textContent = `Status: ${debtStatusText}`;
+            if (currentUser.balance >= 0) {
                 getElement('debtIcon').classList.remove('text-gray-400', 'text-danger');
                 getElement('debtIcon').classList.add('text-green-500');
             } else {
@@ -582,7 +753,6 @@
             getElement('profileUsername').textContent = currentUser.username;
             const keyStatusEl = getElement('aiKeyStatus');
             
-            // Since the key is set by default, the status is always active
             keyStatusEl.textContent = 'Active (Default Key)';
             keyStatusEl.classList.remove('text-danger');
             keyStatusEl.classList.add('text-green-500');
@@ -597,6 +767,12 @@
             messageDiv.textContent = message;
             getElement('chatbotMessages').appendChild(messageDiv);
             getElement('chatbotMessages').scrollTop = getElement('chatbotMessages').scrollHeight;
+            
+            // Dark mode adjustment for bot messages
+            if (!isUser && document.body.classList.contains('dark-mode')) {
+                 messageDiv.classList.remove('bg-gray-100', 'text-gray-700');
+                 messageDiv.classList.add('bg-dark-card', 'text-light');
+            }
         };
 
         const handleChatMessage = async () => {
@@ -615,9 +791,16 @@
             getElement('chatbotMessages').appendChild(typingIndicator);
             getElement('chatbotMessages').scrollTop = getElement('chatbotMessages').scrollHeight;
 
+            // Apply dark mode styling to the typing indicator if active
+            if (document.body.classList.contains('dark-mode')) {
+                 typingIndicator.classList.remove('bg-gray-100', 'text-gray-700');
+                 typingIndicator.classList.add('bg-dark-card', 'text-light');
+            }
+
             try {
                 const summary = getExpenseSummary();
-                const prompt = `Act as a helpful financial advisor. The user is asking: "${message}". Their current financial summary is: Balance: ₹${currentUser.balance.toFixed(2)}, Total Spent: ₹${summary.total.toFixed(2)}, Shopping: ₹${summary.shopping.toFixed(2)}, Food: ₹${summary.food.toFixed(2)}, Bills: ₹${summary.bills.toFixed(2)}, Other: ₹${summary.other.toFixed(2)}. Based on this data, answer their question and provide specific, actionable advice on spending less and saving more. Keep the tone friendly and encouraging.`;
+                // Include initial balance in the prompt for context on savings
+                const prompt = `Act as a helpful financial advisor. The user is asking: "${message}". Their current financial summary is: Balance: ₹${currentUser.balance.toFixed(2)}, Initial Balance: ₹${initialBalance.toFixed(2)}, Total Spent: ₹${summary.total.toFixed(2)}, Shopping: ₹${summary.shopping.toFixed(2)}, Food: ₹${summary.food.toFixed(2)}, Bills: ₹${summary.bills.toFixed(2)}, Other: ₹${summary.other.toFixed(2)}. Based on this data, answer their question and provide specific, actionable advice on spending less and saving more. Keep the tone friendly and encouraging.`;
 
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${aiApiKey}`;
                 
@@ -649,9 +832,7 @@
         // --- 9. INITIALIZATION & EVENT LISTENERS ---
 
         document.addEventListener('DOMContentLoaded', () => {
-            // NOTE: The API Key Modal logic is removed as the key is set by default.
             
-            // Load and check user session
             if (checkLogin()) {
                 updateDashboardUI();
                 updateInsightsUI();
@@ -674,11 +855,20 @@
             // Event Listeners for Dashboard
             getElement('expenseForm').addEventListener('submit', addExpense);
             
+            // Income Modal Listeners
+            getElement('addIncomeBtn').addEventListener('click', () => {
+                getElement('incomeModal').classList.remove('hidden');
+                document.getElementById('incomeAmount').focus();
+            });
+            getElement('closeIncomeModal').addEventListener('click', () => {
+                getElement('incomeModal').classList.add('hidden');
+            });
+            getElement('incomeForm').addEventListener('submit', addIncome);
+            
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const targetId = e.currentTarget.getAttribute('data-target');
                     updateNavState(targetId);
-                    // Rerender specific pages on view change
                     if (targetId === 'insightsContent') updateInsightsUI();
                     if (targetId === 'achievementsContent') updateAchievements();
                 });
@@ -686,15 +876,25 @@
 
             // Dark Mode Toggle
             getElement('toggleDarkMode').addEventListener('click', () => {
-                getElement('body').classList.toggle('dark-mode');
+                const isDarkMode = getElement('body').classList.toggle('dark-mode');
                 // Redraw chart to update colors for dark mode
                 if (expenseChartInstance) updateInsightsUI();
+
+                // Change chatbot message background in dark mode
+                document.querySelectorAll('.chatbot-messages .message:not(.self-end)').forEach(msg => {
+                    if (isDarkMode) {
+                        msg.classList.remove('bg-gray-100', 'text-gray-700');
+                        msg.classList.add('bg-dark-card', 'text-light');
+                    } else {
+                        msg.classList.add('bg-gray-100', 'text-gray-700');
+                        msg.classList.remove('bg-dark-card', 'text-light');
+                    }
+                });
             });
             
             // AI Chatbot Listeners
             getElement('chatbotToggleBtn').addEventListener('click', () => {
                 getElement('chatbotWindow').classList.toggle('hidden');
-                // Scroll to bottom when opening
                 if (!getElement('chatbotWindow').classList.contains('hidden')) {
                     getElement('chatbotMessages').scrollTop = getElement('chatbotMessages').scrollHeight;
                 }
@@ -713,11 +913,11 @@
                     localStorage.removeItem('current_user');
                     currentUser = null;
                     aiApiKey = '';
-                    alert('Application data successfully reset.');
-                    window.location.reload(); 
+                    showNotification('Application data successfully reset. Reloading...', 'danger');
+                    setTimeout(() => window.location.reload(), 1000);
                 }
             });
         });
     </script>
 </body>
-</htmt> add a option so that we can add balance our self and does not start with a default vaue
+</htmt>
