@@ -105,11 +105,6 @@
                         <label for="authPassword" class="block text-gray-700 font-medium mb-2">Password</label>
                         <input type="password" id="authPassword" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition-colors duration-300" placeholder="Enter password" required>
                     </div>
-                    <!-- Initial Balance Input (Visible only during registration) -->
-                    <div class="mb-4 hidden" id="initialBalanceGroup">
-                        <label for="initialBalance" class="block text-gray-700 font-medium mb-2">Initial Balance (₹)</label>
-                        <input type="number" id="initialBalance" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition-colors duration-300" placeholder="e.g., 20000" min="0" step="0.01" required>
-                    </div>
                     <button type="submit" class="w-full bg-primary text-white p-3 rounded-lg font-semibold hover:bg-secondary transition duration-200">
                         <span id="authBtnText">Login</span>
                     </button>
@@ -278,22 +273,6 @@
                                     <span class="font-medium text-gray-700">AI Key Status:</span>
                                     <span id="aiKeyStatus" class="font-semibold text-green-500"></span>
                                 </div>
-                                <div class="flex justify-between border-b pb-2">
-                                    <span class="font-medium text-gray-700">Initial Balance:</span>
-                                    <span id="profileInitialBalance" class="font-semibold"></span>
-                                </div>
-                                <div class="flex justify-between border-b pb-2">
-                                    <span class="font-medium text-gray-700">Current Balance:</span>
-                                    <span id="profileCurrentBalance" class="font-semibold"></span>
-                                </div>
-                                <div class="flex justify-between border-b pb-2">
-                                    <span class="font-medium text-gray-700">Total Expenses:</span>
-                                    <span id="profileTotalExpenses" class="font-semibold"></span>
-                                </div>
-                                <!-- Add Balance Button -->
-                                <button id="addBalanceBtn" class="w-full mt-2 bg-success text-white p-3 rounded-lg font-semibold hover:bg-success/80 transition duration-200 flex items-center justify-center space-x-2">
-                                    <i class="fas fa-plus-circle"></i><span>Add Balance</span>
-                                </button>
                                 <button id="resetAppBtn" class="w-full mt-4 bg-danger text-white p-3 rounded-lg font-semibold hover:bg-danger/80 transition duration-200">
                                     <i class="fas fa-trash"></i> Reset App (Clear All Data & Logout)
                                 </button>
@@ -369,12 +348,6 @@
             const data = loadData();
             
             if (isRegisterMode) {
-                const initialBalance = parseFloat(getElement('initialBalance').value);
-                if (isNaN(initialBalance) || initialBalance < 0) {
-                    alert('Please enter a valid initial balance (>= 0).');
-                    return;
-                }
-                
                 // Register
                 if (data.users[username]) {
                     alert('Username already exists!');
@@ -385,7 +358,7 @@
                     localStorage.setItem(AI_KEY_STORAGE_KEY, aiApiKey);
                 }
                 
-                data.users[username] = { password, balance: initialBalance, initialBalance: initialBalance, joined: new Date().toISOString() }; // Store initial balance
+                data.users[username] = { password, balance: 50000, joined: new Date().toISOString() };
                 saveData(data);
                 alert('Registration successful! Please log in.');
                 isRegisterMode = false;
@@ -409,8 +382,6 @@
             getElement('authTitle').textContent = isRegisterMode ? 'Sign Up' : 'Login';
             getElement('authBtnText').textContent = isRegisterMode ? 'Register' : 'Login';
             getElement('toggleAuthMode').textContent = isRegisterMode ? 'Already have an account? Login' : 'New User? Sign Up';
-            // Show/hide initial balance field
-            getElement('initialBalanceGroup').classList.toggle('hidden', !isRegisterMode);
             getElement('authForm').reset();
         };
 
@@ -573,11 +544,11 @@
             const userExpenses = data.expenses.filter(exp => exp.username === currentUser.username);
             const totalSpent = getExpenseSummary().total;
             
-            // 1. Savings Starter (Goal: Save 5% of *initial* balance)
-            const initialBalance = currentUser.initialBalance || 0; // Use stored initial balance
-            const targetSavings = initialBalance * 0.05; // 5% of initial balance
+            // 1. Savings Starter (Goal: Save 5% of starting balance, assuming 50000 starting)
+            const initialBalance = 50000;
+            const targetSavings = initialBalance * 0.05; // 2500
             const currentSavings = initialBalance - totalSpent;
-            const progress = initialBalance > 0 ? Math.min(100, Math.max(0, (currentSavings / targetSavings) * 100)) : 0;
+            const progress = Math.min(100, Math.max(0, (currentSavings / targetSavings) * 100));
 
             getElement('savingsProgress').style.width = `${progress.toFixed(0)}%`;
             getElement('savingsStatus').textContent = `${progress.toFixed(0)}% Saved`;
@@ -609,14 +580,6 @@
         // --- 7. PROFILE LOGIC ---
         const updateProfileSection = () => {
             getElement('profileUsername').textContent = currentUser.username;
-            getElement('profileInitialBalance').textContent = `₹${(currentUser.initialBalance || 0).toFixed(2)}`;
-            getElement('profileCurrentBalance').textContent = `₹${currentUser.balance.toFixed(2)}`;
-            // Calculate total expenses for profile
-            const data = loadData();
-            const userExpenses = data.expenses.filter(exp => exp.username === currentUser.username);
-            const totalExpenses = userExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-            getElement('profileTotalExpenses').textContent = `₹${totalExpenses.toFixed(2)}`;
-
             const keyStatusEl = getElement('aiKeyStatus');
             
             // Since the key is set by default, the status is always active
@@ -624,28 +587,6 @@
             keyStatusEl.classList.remove('text-danger');
             keyStatusEl.classList.add('text-green-500');
             getElement('chatbotSendBtn').disabled = false;
-        };
-
-        // --- Add Balance Modal Logic ---
-        const addBalance = () => {
-            const amountStr = prompt("Enter the amount to add to your balance:");
-            if (amountStr === null) return; // User cancelled
-
-            const amount = parseFloat(amountStr);
-            if (isNaN(amount) || amount <= 0) {
-                alert("Please enter a valid positive amount.");
-                return;
-            }
-
-            const data = loadData();
-            // Update user balance and save
-            currentUser.balance += amount;
-            data.users[currentUser.username].balance = currentUser.balance;
-            saveData(data);
-
-            updateDashboardUI();
-            updateProfileSection(); // Update profile balance display
-            alert(`₹${amount.toFixed(2)} added to your balance successfully!`);
         };
 
         // --- 8. GEMINI CHATBOT LOGIC ---
@@ -750,9 +691,6 @@
                 if (expenseChartInstance) updateInsightsUI();
             });
             
-            // Add Balance Button
-            getElement('addBalanceBtn').addEventListener('click', addBalance);
-            
             // AI Chatbot Listeners
             getElement('chatbotToggleBtn').addEventListener('click', () => {
                 getElement('chatbotWindow').classList.toggle('hidden');
@@ -782,4 +720,4 @@
         });
     </script>
 </body>
-</html>
+</htmt> add a option so that we can add balance our self and does not start with a default vaue
