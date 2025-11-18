@@ -20,122 +20,120 @@
                         'dark': '#1d3557',
                         'light': '#f8f9fa',
                         'gray': '#6c757d',
-                        'dark-bg': '#121212', // New dark background color
-                        'dark-card': '#1e1e1e', // New dark card color
-                        'dark-border': '#333333', // New dark border color
+                        // --- MODIFIED FOR PURE BLACK BACKGROUND ---
+                        'dark-bg': '#000000', // Pure Black Background
+                        'dark-card': '#111111', // Near-Black Card/Element Color
+                        'dark-border': '#333333',
                     }
                 }
             }
         }
     </script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-    
-    body { 
-        font-family: 'Inter', sans-serif; 
-        background-color: #f8f9fa; /* Default light background */
-        transition: background-color 0.3s ease, color 0.3s ease;
-        overflow-y: scroll;
-    }
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8f9fa; /* Default light background */
+            transition: background-color 0.3s ease, color 0.3s ease;
+            overflow-y: scroll;
+        }
 
-    /* ---------------------------------
-        Improved Full Dark Mode Styles
-        --------------------------------- */
-    .dark-mode {
-        background-color: var(--tw-colors-dark-bg) !important;
-        color: #e2e8f0;
-    }
-    
-    /* Elements that are white in light mode become dark-card in dark mode */
-    .dark-mode .bg-white { 
-        background-color: var(--tw-colors-dark-card) !important; 
-    }
-    
-    /* FIX: Input field background now uses dark-card or a similar dark shade from config, and ensures primary text is light. */
-    .dark-mode input, 
-    .dark-mode select, 
-    .dark-mode textarea { 
-        /* Use dark-card or similar for input backgrounds */
-        background-color: var(--tw-colors-dark-card) !important; 
-        color: #e2e8f0 !important; /* Ensure text inside is light */
-        border-color: var(--tw-colors-dark-border) !important; 
-    }
-    
-    /* Ensure elements that use the 'dark' utility color (like main headings) are light in dark mode */
-    .dark-mode .text-dark { 
-        color: #e2e8f0 !important; 
-    }
-    
-    /* Fix for lighter text colors used in light mode */
-    .dark-mode .text-gray-700 { 
-        color: #a0aec0 !important; /* Lighter grey for secondary text */
-    }
-    .dark-mode .text-gray-500 { 
-        color: #9ca3af !important; 
-    }
-    .dark-mode .text-gray-600 { /* Added for achievement statuses */
-        color: #a0aec0 !important;
-    }
+        /* ---------------------------------
+            Improved Full Dark Mode Styles (FIXED for BLACK background)
+            --------------------------------- */
+        .dark-mode {
+            background-color: var(--tw-colors-dark-bg) !important; /* #000000 */
+            color: #e2e8f0;
+        }
+        
+        /* Elements that are white in light mode become dark-card in dark mode */
+        .dark-mode .bg-white { 
+            background-color: var(--tw-colors-dark-card) !important; /* #111111 */
+        }
+        
+        /* Input field background now uses dark-card or a similar dark shade from config, and ensures primary text is light. */
+        .dark-mode input, 
+        .dark-mode select, 
+        .dark-mode textarea { 
+            background-color: #222222 !important; /* Slightly darker than card for contrast */
+            color: #e2e8f0 !important; 
+            border-color: var(--tw-colors-dark-border) !important; 
+        }
+        
+        /* Ensure elements that use the 'dark' utility color (like main headings) are light in dark mode */
+        .dark-mode .text-dark { 
+            color: #e2e8f0 !important; 
+        }
+        
+        /* Fix for lighter text colors used in light mode */
+        .dark-mode .text-gray-700 { 
+            color: #a0aec0 !important; 
+        }
+        .dark-mode .text-gray-500,
+        .dark-mode .text-gray-600 { 
+            color: #9ca3af !important; 
+        }
 
-    /* Fix for light background elements */
-    .dark-mode .bg-gray-50 { 
-        background-color: #2c2c2c !important; /* Slightly darker than dark-card for contrast */
-    }
+        /* Fix for light background elements */
+        .dark-mode .bg-gray-50 { 
+            background-color: #222222 !important; /* Slightly darker than dark-card for contrast on list items */
+        }
 
-    /* Fix for borders (like achievement list dividers, content separators) */
-    .dark-mode .border-gray-200, 
-    .dark-mode .border-b, 
-    .dark-mode .border-l,
-    .dark-mode .border-gray-100 { 
-        border-color: var(--tw-colors-dark-border) !important; 
-    }
+        /* Fix for borders (like achievement list dividers, content separators) */
+        .dark-mode .border-gray-200, 
+        .dark-mode .border-b, 
+        .dark-mode .border-l,
+        .dark-mode .border-gray-100 { 
+            border-color: var(--tw-colors-dark-border) !important; 
+        }
 
-    /* Specific elements */
-    .dark-mode .message.bot-message { 
-        background-color: var(--tw-colors-dark-card) !important; 
-        color: #e2e8f0 !important; 
-    }
-    .dark-mode .expense-item { 
-        background-color: #2c2c2c !important; 
-    }
-    .dark-mode .nav-btn.text-gray-700 { 
-        color: #a0aec0 !important; 
-    }
-    .dark-mode .nav-btn:hover { 
-        background-color: #2c2c2c !important; 
-    }
-    .dark-mode .chart-title, .dark-mode .text-dark { 
-        color: #e2e8f0 !important; 
-    }
+        /* Specific elements */
+        .dark-mode .message.bot-message { 
+            background-color: var(--tw-colors-dark-card) !important; 
+            color: #e2e8f0 !important; 
+        }
+        .dark-mode .expense-item { 
+            background-color: #222222 !important; /* Match bg-gray-50 fix */
+        }
+        .dark-mode .nav-btn.text-gray-700 { 
+            color: #a0aec0 !important; 
+        }
+        .dark-mode .nav-btn:hover { 
+            background-color: #222222 !important; 
+        }
+        .dark-mode .chart-title { 
+            color: #e2e8f0 !important; 
+        }
 
-    /* General styles (Unchanged) */
-    .loading {
-        display: inline-block;
-        width: 1rem;
-        height: 1rem;
-        border: 3px solid rgba(255, 255, 255, .3);
-        border-radius: 50%;
-        border-top-color: white;
-        animation: spin 1s ease-in-out infinite;
-    }
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-    .modal { background: rgba(0, 0, 0, 0.5); z-index: 50; }
+        /* General styles (Unchanged) */
+        .loading {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 3px solid rgba(255, 255, 255, .3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .modal { background: rgba(0, 0, 0, 0.5); z-index: 50; }
 
-    /* Notification Styling (Unchanged) */
-    .notification-alert {
-        position: fixed;
-        top: 1rem;
-        right: 1rem;
-        min-width: 300px;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-        z-index: 50;
-    }
-</style>
+        /* Notification Styling (Unchanged) */
+        .notification-alert {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            min-width: 300px;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            z-index: 50;
+        }
+    </style>
 </head>
 <body class="p-4 md:p-8 transition-colors duration-300" id="body">
     
@@ -724,7 +722,11 @@
                 const prefixIcon = isSaving ? '<i class="fas fa-arrow-right-to-bracket text-lg"></i>' : '<i class="fas fa-credit-card text-lg"></i>';
                 const descriptionText = isSaving ? 'Log Savings' : exp.description || exp.category.charAt(0).toUpperCase() + exp.category.slice(1);
                 
-                item.className = `expense-item flex justify-between items-center p-3 rounded-lg bg-gray-50 border-l-4 ${categoryColor} shadow-sm transition-colors duration-300`;
+                // Recalculate background color based on current dark mode state
+                const isDarkMode = document.body.classList.contains('dark-mode');
+                const bgColor = isDarkMode ? 'bg-[#222222]' : 'bg-gray-50'; // Use a hardcoded dark color for list items
+
+                item.className = `expense-item flex justify-between items-center p-3 rounded-lg ${bgColor} border-l-4 ${categoryColor} shadow-sm transition-colors duration-300`;
                 
                 const displayAmount = Math.abs(exp.amount).toFixed(2);
                 
@@ -913,7 +915,8 @@
                 const progress = Math.min(100, Math.max(0, (currentSaved / milestone.target) * 100));
                 const statusColor = milestone.achieved ? 'text-blue-600' : 'text-gray-400';
                 const statusIcon = milestone.achieved ? 'fa-check-double' : 'fa-arrow-right';
-                const bgColor = isDarkMode ? 'bg-dark-card' : 'bg-gray-50';
+                // Use a darker background for milestones in dark mode
+                const bgColor = isDarkMode ? 'bg-[#222222]' : 'bg-gray-50';
 
                 const item = document.createElement('li');
                 item.className = `p-3 border border-gray-100 rounded-lg ${bgColor} flex justify-between items-center transition-colors duration-300`;
@@ -994,7 +997,8 @@
 
             const typingIndicator = document.createElement('div');
             const isDarkMode = document.body.classList.contains('dark-mode');
-            const typingClasses = isDarkMode ? 'bg-dark-card text-light' : 'bg-gray-100 text-gray-700';
+            // Use a dark color for contrast in the typing indicator
+            const typingClasses = isDarkMode ? 'bg-[#222222] text-light' : 'bg-gray-100 text-gray-700';
 
             typingIndicator.className = `message bot-message self-start p-3 rounded-xl rounded-tl-none max-w-[85%] flex items-center space-x-2 ${typingClasses}`;
             typingIndicator.innerHTML = `Thinking... <div class="loading !w-3 !h-3 !border-gray-500 !border-t-primary"></div>`;
@@ -1101,8 +1105,9 @@
                     }
                 });
                 
-                // Recolor expense items on dashboard
+                // Recolor expense items and milestones on dashboard
                 renderExpenses();
+                renderMilestones();
             });
             
             // AI Chatbot Listeners
@@ -1138,4 +1143,3 @@
     </script>
 </body>
 </htmt>
-
